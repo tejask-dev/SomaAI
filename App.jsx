@@ -54,7 +54,7 @@ function Hero() {
             <a href="#features" className="px-5 py-3 rounded-2xl border border-emerald-200 text-emerald-800 font-semibold hover:bg-white">See Features</a>
           </div>
           <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
-            <Stat label="Anonymous" value="100%" />
+            <Stat label="Anonymous" value="100%" /> 
             <Stat label="Languages" value="4+" />
             <Stat label="Guideline‑aligned" value="WHO / UNFPA" />
           </div>
