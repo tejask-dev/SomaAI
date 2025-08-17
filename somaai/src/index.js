@@ -14,6 +14,7 @@ root.render(
     <BrowserRouter>
       <Routes>
         <Route index element={<App />} />
+        <Route path="chat" element={<AIPage />} />
         <Route path="lessons" element={<Lessons />} />
         <Route path='lesson/:id' element={<LessonPage />} />
         <Route path='*' element={<h1>Error 404: Page not found.</h1>}/>
