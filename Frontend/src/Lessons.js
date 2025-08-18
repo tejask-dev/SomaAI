@@ -1,49 +1,70 @@
-import React from "react";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { HomeIcon } from "@heroicons/react/24/solid";
+
+const lessons = [
+  {
+    title: "Nutrition & Fitness",
+    desc: "Learn how to fuel your body and stay active for a healthy lifestyle."
+  },
+  {
+    title: "Mental Health Basics",
+    desc: "Understand stress, anxiety, and tips to support your emotional well-being."
+  },
+  {
+    title: "Digital Safety",
+    desc: "Protect your privacy, stay safe online, and manage social media responsibly."
+  },
+  {
+    title: "Sleep & Wellness",
+    desc: "Discover the importance of sleep and healthy routines for teens."
+  },
+  {
+    title: "Substance Awareness",
+    desc: "Get facts about alcohol, drugs, and making safe choices."
+  },
+];
 
 export default function Lessons() {
-  const lessons = [
-    {
-      title: "Nutrition & Fitness",
-      desc: "Learn how to fuel your body and stay active for a healthy lifestyle."
-    },
-    {
-      title: "Mental Health Basics",
-      desc: "Understand stress, anxiety, and tips to support your emotional well-being."
-    },
-    {
-      title: "Digital Safety",
-      desc: "Protect your privacy, stay safe online, and manage social media responsibly."
-    },
-    {
-      title: "Sleep & Wellness",
-      desc: "Discover the importance of sleep and healthy routines for teens."
-    },
-    {
-      title: "Substance Awareness",
-      desc: "Get facts about alcohol, drugs, and making safe choices."
-    },
-  ];
+  const [search, setSearch] = useState("");
+  const filtered = lessons.filter(
+    l =>
+      l.title.toLowerCase().includes(search.toLowerCase()) ||
+      l.desc.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
-    <section id="lessons" className="py-12 md:py-16 bg-gradient-to-b from-emerald-50 to-white">
-      <div className="mx-auto max-w-6xl px-4">
-        <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Lessons</h2>
-        <p className="mt-2 text-slate-700">
-          Access bite-sized, reliable health lessons designed for teens and young adults.
-        </p>
-        <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {lessons.map((lesson, i) => (
+    <section className="min-h-screen bg-gradient-to-b from-emerald-50 to-white px-4 py-12">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <div className="flex items-center gap-3">
+            <Link to="/" className="flex items-center gap-1 text-emerald-600 hover:underline">
+              <HomeIcon className="h-5 w-5 text-emerald-600" />
+              Home
+            </Link>
+            <h2 className="text-3xl font-bold ml-4">Lessons</h2>
+          </div>
+          <input
+            type="text"
+            placeholder="Search lessons…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="rounded-lg px-4 py-2 border border-emerald-200 shadow focus:ring-emerald-400 focus:outline-none"
+          />
+        </div>
+        <div className="grid sm:grid-cols-2 gap-6">
+          {filtered.map((lesson, i) => (
             <div
               key={i}
-              className="p-5 rounded-2xl bg-white border border-emerald-100 shadow-sm hover:shadow-md transition-shadow"
+              className="p-6 rounded-2xl bg-white border border-emerald-100 shadow-sm hover:shadow-emerald-100 hover:scale-[1.03] transition-all duration-300"
             >
-              <div className="h-10 w-10 rounded-xl bg-emerald-100 flex items-center justify-center font-bold text-emerald-700">
-                {i + 1}
-              </div>
-              <h3 className="mt-4 font-semibold text-lg">{lesson.title}</h3>
-              <p className="mt-2 text-slate-700 text-sm">{lesson.desc}</p>
+              <h3 className="font-semibold text-lg mb-1">{lesson.title}</h3>
+              <p className="text-slate-700 text-sm">{lesson.desc}</p>
             </div>
           ))}
+          {filtered.length === 0 && (
+            <div className="col-span-2 text-center text-slate-500 py-12">No lessons found.</div>
+          )}
         </div>
       </div>
     </section>
