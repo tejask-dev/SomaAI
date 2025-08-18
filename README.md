@@ -18,16 +18,13 @@ https://somaai-5qe3.onrender.com/
 1. Download the repository through git or GitHub desktop
 2. In the Backend directory, create a file named .env and paste the following text:
 
+```
 OPENROUTER_API_KEY_PRIMARY=
-
 OPENROUTER_API_KEY_SECONDARY=
-
 YOUTUBE_API_KEY=
-
 ENABLE_TTS=true
-
 ALLOWED_LANGS=en,fr,pt,sw,es,hi
-
+```
 
 3. Visit https://openrouter.ai/mistralai/mistral-nemo:free and get an API key, then paste it after OPENROUTER_API_KEY_PRIMARY=
 4. Visit https://openrouter.ai/meta-llama/llama-3.3-70b-instruct:free and get an API key, then paste it after OPENROUTER_API_KEY_PRIMARY=
