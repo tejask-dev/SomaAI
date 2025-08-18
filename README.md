@@ -1,3 +1,5 @@
+[<img src="logo.png">](https://somaai-5qe3.onrender.com/)
+
 # Running SomaAI
 
 ## Deployment
