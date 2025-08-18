@@ -1,4 +1,8 @@
-[<p align="center"><img src="logo.png" width=300px></p>](https://somaai-5qe3.onrender.com/)
+<p align="center">
+  <a href="https://somaai-5qe3.onrender.com/">
+    <img src="logo.png" width="300px">
+  </a>
+</p>
 
 # Running SomaAI
 
