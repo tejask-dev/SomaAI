@@ -10,6 +10,11 @@
     background-color: #eff6ff;
 }
 
+.video {
+    margin-top: 10vh;
+
+}
+
 nav {
     top: 0;
     position: sticky;

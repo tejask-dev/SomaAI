@@ -5,6 +5,8 @@ import { db } from './firebase';
 import { getDoc, getDocs, collection, doc } from 'firebase/firestore';
 import LessonCard from './LessonCard';
 import './LessonPage.css'
+import Youtube from "react-youtube";
+
 
 function LessonPage() {
     const [showSidebar, setShowSidebar] = useState(false);
@@ -13,6 +15,11 @@ function LessonPage() {
     const [discoverLessons, setDiscoverLessons] = useState([]);
 
     const discoverLessonCount = 4;
+
+    const opts = {
+        height: '390',
+        width: '640',
+    }
 
     React.useEffect(() => {
         async function fetchData() {
@@ -47,6 +54,7 @@ function LessonPage() {
             <main>
                 <h1 className='title'>{data.name}</h1>
                 <Markdown>{data.content}</Markdown>
+                <Youtube videoId={getYouTubeID(data.video)} opts={opts} className="video" />
                 <h2 className='discover-text'>Discover more</h2>
                 <div className='discover'>
                     {discoverLessons.map((lesson, i) => (
@@ -69,6 +77,17 @@ async function getContent(id) {
     const docSnap = await getDoc(docRef);
 
     return docSnap.data();
+}
+
+function getYouTubeID(url) {
+    if (!url) return null;
+    const urlObj = new URL(url);
+    if (urlObj.hostname.includes('youtu.be')) {
+        return urlObj.pathname.slice(1); // removes the leading '/'
+    } else if (urlObj.hostname.includes('youtube.com')) {
+        return urlObj.searchParams.get('v');
+    }
+    return null;
 }
 
 export default LessonPage;
