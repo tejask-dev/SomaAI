@@ -44,4 +44,4 @@ ALLOWED_LANGS=en,fr,pt,sw,es,hi
 3. In the terminal, still in the Backend directory, run `python app.py` to start running the Backend local server
 
 ### And voila!
-The website should be fully operational. Visit http://http://localhost:3000/ to use SomaAI!
+The website should be fully operational. Visit http://localhost:3000/ to use SomaAI!
