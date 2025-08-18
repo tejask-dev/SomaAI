@@ -1,70 +1,36 @@
-# Getting Started with Create React App
+# Running SomaAI
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Installing necessary programs
+1. Download and install NodeJS from https://nodejs.org/en/download/
+2. Download and install Python from https://www.python.org/downloads/
 
-## Available Scripts
+## Adding API keys
+1. Download the repository through git or GitHub desktop
+2. In the Backend directory, create a file named .env and paste the following text:
 
-In the project directory, you can run:
+OPENROUTER_API_KEY_PRIMARY=
+OPENROUTER_API_KEY_SECONDARY=
+YOUTUBE_API_KEY=
+ENABLE_TTS=true
+ALLOWED_LANGS=en,fr,pt,sw,es,hi
 
-### `npm start`
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+3. Visit https://openrouter.ai/mistralai/mistral-nemo:free and get an API key, then paste it after OPENROUTER_API_KEY_PRIMARY=
+4. Visit https://openrouter.ai/meta-llama/llama-3.3-70b-instruct:free and get an API key, then paste it after OPENROUTER_API_KEY_PRIMARY=
+5. Get a Youtube API key and paste it after YOUTUBE_API_KEY= (optional)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
 
-### `npm test`
+## Installing dependencies
+1. Open a terminal window in the project directory, then run `cd Backend` to enter the Backend directory
+2. In the terminal, run `pip install -r requirements.txt` to install python dependencies
+3. In the terminal, run `cd ..` to return to the root directory
+4. In the terminal, run `cd Frontend` to enter the Frontend directory
+5. In the terminal, run `npm install` to install node dependencies
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Running the app
+1. In the terminal, still in the Frontend directory, run `npm start` to start running the Frontend local server
+2. Open another terminal window in the project directory, then run `cd Backend` to enter the Backend directory
+3. In the terminal, still in the Backend directory, run `python app.py` to start running the Backend local server
 
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## And voila!
+The website should be fully operational
