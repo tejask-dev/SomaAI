@@ -9,9 +9,13 @@
 2. In the Backend directory, create a file named .env and paste the following text:
 
 OPENROUTER_API_KEY_PRIMARY=
+
 OPENROUTER_API_KEY_SECONDARY=
+
 YOUTUBE_API_KEY=
+
 ENABLE_TTS=true
+
 ALLOWED_LANGS=en,fr,pt,sw,es,hi
 
 
