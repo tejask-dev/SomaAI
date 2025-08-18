@@ -95,6 +95,7 @@ function ChatBox({ user, lang, setLang }) {
     const detectedLang = detectLang(input);
     setLang(detectedLang);
 
+    const API_BASE = "https://somaai-jfuq.onrender.com";
     const userMsg = { role: "user", text: input.trim(), lang: detectedLang };
     const newMsgs = [...messages, userMsg];
     setMessages(newMsgs);
@@ -106,7 +107,7 @@ function ChatBox({ user, lang, setLang }) {
     try {
       if (!session_id) {
         // Create new session if first message
-        const res = await fetch("/api/session", {
+        const res = await fetch(`${API_BASE}/api/session`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ language: detectedLang }),
@@ -115,7 +116,7 @@ function ChatBox({ user, lang, setLang }) {
         session_id = data.session_id;
         setSessionId(session_id);
       }
-      const res = await fetch("/api/chat", {
+      const res = await fetch(`${API_BASE}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
