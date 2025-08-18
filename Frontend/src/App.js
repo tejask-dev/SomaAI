@@ -1,10 +1,10 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
+import Navbar from "./Navbar";
 import "./App.css";
 import deepakPhoto from "./assets/Daniel.jpg";
 import tejasPhoto from "./assets/tejas-1.jpg";
 import samPhoto from "./assets/swanish.jpg";
-import { HomeIcon } from "@heroicons/react/24/solid";
 
 export default function App() {
   const location = useLocation();
@@ -12,7 +12,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-white text-slate-800 overflow-x-hidden">
-      <Header />
+      <Navbar />
       {isHome && <Hero />}
       <HowItWorks />
       <Challenge />
@@ -23,6 +23,7 @@ export default function App() {
     </div>
   );
 }
+
 
 // FIXED HEADER: Proper vertical alignment, single-line nav, spacing, and responsiveness
 function Header() {
