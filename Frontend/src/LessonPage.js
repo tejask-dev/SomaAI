@@ -4,15 +4,9 @@ import Markdown from 'react-markdown';
 import { db } from './firebase';
 import { getDoc, getDocs, collection, doc } from 'firebase/firestore';
 import LessonCard from './LessonCard';
-<<<<<<< Updated upstream
-import './LessonPage.css'
-import Youtube from "react-youtube";
-
-=======
 import './LessonPage.css';
 import Navbar from "./Navbar";
 import Youtube from "react-youtube";
->>>>>>> Stashed changes
 
 function LessonPage() {
     const [showSidebar, setShowSidebar] = useState(false);
@@ -21,11 +15,6 @@ function LessonPage() {
     const [discoverLessons, setDiscoverLessons] = useState([]);
     const discoverLessonCount = 4;
     const opts = { height: '390', width: '640' };
-
-    const opts = {
-        height: '390',
-        width: '640',
-    }
 
     React.useEffect(() => {
         async function fetchData() {
@@ -51,32 +40,6 @@ function LessonPage() {
     if (!data) return <h1>Error 404: Lesson not found.</h1>;
     
     return (
-<<<<<<< Updated upstream
-        <div className="lessonPage">
-            <nav>
-                <button onClick={() => setShowSidebar(!showSidebar)} className = 'sidebar-button'/>
-                Navbar
-            </nav>
-            <aside id="sidebar" className={showSidebar ? 'show-sidebar' : ''} />
-            <main>
-                <h1 className='title'>{data.name}</h1>
-                <Markdown>{data.content}</Markdown>
-                <Youtube videoId={getYouTubeID(data.video)} opts={opts} className="video" />
-                <h2 className='discover-text'>Discover more</h2>
-                <div className='discover'>
-                    {discoverLessons.map((lesson, i) => (
-                        <LessonCard 
-                            key={i}
-                            id={lesson.id}
-                            name={lesson.name}
-                            content={lesson.content.slice(20)}
-                        />
-                    ))}
-                </div>
-            </main>
-            <footer />
-        </div>
-=======
         <>
             <Navbar />
             <div className="lessonPage">
@@ -102,7 +65,6 @@ function LessonPage() {
                 <footer />
             </div>
         </>
->>>>>>> Stashed changes
     );
 }
 
