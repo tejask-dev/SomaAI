@@ -1,10 +1,41 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import placeholder from './lesson_placeholder.jpg';
-import './lessonPage.css'
+import { Link, useParams } from "react-router-dom";
+import Markdown from 'react-markdown';
+import { db } from './firebase';
+import { getDoc, getDocs, collection, doc } from 'firebase/firestore';
+import LessonCard from './LessonCard';
+import './LessonPage.css'
 
 function LessonPage() {
     const [showSidebar, setShowSidebar] = useState(false);
+    const { id } = useParams();
+    const [data, setData] = useState();
+    const [discoverLessons, setDiscoverLessons] = useState([]);
+
+    const discoverLessonCount = 4;
+
+    React.useEffect(() => {
+        async function fetchData() {
+            const docs = await getDocs(collection(db, "Lessons"))
+            const result = await getContent(id);
+            setData(result);
+            addDiscoverLessons(docs.docs.map(d => ({
+                id: d.id,
+                ...d.data()
+            })));
+        }
+        function addDiscoverLessons(docsData) {
+            const randomLessons = [];
+            for (let i = 0; i < discoverLessonCount; i++) {
+                const randomDoc = docsData[Math.floor(Math.random() * docsData.length)];
+                randomLessons.push(randomDoc);
+            }
+            setDiscoverLessons(randomLessons);
+        }
+        fetchData();
+    }, [id]);
+
+    if (!data) return <h1>Error 404: Lesson not found.</h1>;
     
     return (
         <div className="lessonPage">
@@ -12,28 +43,32 @@ function LessonPage() {
                 <button onClick={() => setShowSidebar(!showSidebar)} className = 'sidebar-button'/>
                 Navbar
             </nav>
-            <aside id="sidebar" className={showSidebar ? 'show-sidebar' : ''}>Sidebar</aside>
+            <aside id="sidebar" className={showSidebar ? 'show-sidebar' : ''} />
             <main>
-                <h1>Lesson Name</h1>
-                <p>Voluptate laboris sint exercitation velit culpa tempor dolor voluptate irure est. Culpa pariatur esse commodo mollit proident nulla aliquip velit eu reprehenderit irure fugiat. Duis esse esse proident non. Eu irure enim fugiat consequat elit amet velit incididunt eu duis Lorem culpa reprehenderit. Reprehenderit dolore qui enim est nulla proident.Lorem consectetur non quis culpa elit aliquip laboris. Laboris cupidatat aliqua dolor ipsum deserunt non minim excepteur. Magna adipisicing pariatur sit commodo enim Lorem nisi voluptate consequat eiusmod reprehenderit labore reprehenderit elit. Sit id magna Lorem incididunt. Mollit voluptate laborum ut sit sit sint mollit.Est tempor magna cillum officia veniam sunt ipsum ut aute. Amet nisi laboris officia sint sint minim voluptate labore laborum eiusmod consectetur incididunt fugiat ipsum. Sunt ea labore do cillum excepteur occaecat. Cillum mollit dolore labore esse consequat deserunt laborum deserunt nostrud eu. Nulla fugiat sit nulla non ea fugiat quis. Et ad sint tempor id anim aliqua est ad.Tempor magna ut amet excepteur amet. Eu est fugiat adipisicing deserunt in tempor qui nulla nulla dolore eiusmod cupidatat. Aliquip sint ex ex do voluptate cillum veniam laborum proident eu tempor culpa. Voluptate consectetur nulla consectetur cillum duis laboris sunt magna enim ea Lorem sint magna. Minim aliquip dolor occaecat commodo ea adipisicing ipsum est voluptate ut. Pariatur elit qui aute adipisicing nulla quis commodo et deserunt nisi irure ut. Proident pariatur labore irure pariatur magna mollit occaecat magna tempor irure duis sunt commodo irure.Id pariatur deserunt enim laborum ad aute do ad cupidatat magna. Non adipisicing eiusmod irure cupidatat sit laborum eu do eiusmod commodo aliquip enim ipsum in. Nisi esse ex ut eu deserunt. Elit laboris est ipsum excepteur tempor eiusmod ad laborum proident. Occaecat anim amet ex labore commodo duis aute mollit.Tempor dolore occaecat sunt ullamco laboris cupidatat nulla labore proident elit cillum qui commodo. Ea consectetur occaecat deserunt ad incididunt pariatur deserunt dolor id. Quis velit proident dolore labore nostrud. Laboris est sunt sint nulla dolor amet ullamco. Minim sit anim duis elit aliqua est ad laborum non consequat fugiat. Incididunt anim aute veniam sit sit in anim duis ut nulla Lorem nostrud.Eiusmod nostrud Lorem ullamco sit aute aliqua anim cupidatat qui culpa. Ut velit culpa pariatur occaecat. Pariatur cillum sint cillum esse in dolor irure ad.Sunt enim nostrud reprehenderit qui aute. Amet amet elit consequat magna Lorem velit dolore non aliqua dolor sint ex. Pariatur officia excepteur ad eiusmod dolor elit mollit eiusmod sit veniam magna. Ipsum sunt minim ipsum qui. Enim incididunt eiusmod officia esse do anim labore proident labore.Consequat pariatur id aute laboris. Do ut culpa eu aute occaecat irure eiusmod elit qui. Duis nulla Lorem ex nisi nostrud sint fugiat cillum. Adipisicing dolore enim in cillum ad dolor deserunt. Et cupidatat veniam ad et voluptate cupidatat excepteur. Aliquip ea voluptate ut sint pariatur officia. Commodo est cupidatat magna adipisicing deserunt excepteur in non Lorem nostrud qui.</p>
-                <p>Voluptate laboris sint exercitation velit culpa tempor dolor voluptate irure est. Culpa pariatur esse commodo mollit proident nulla aliquip velit eu reprehenderit irure fugiat. Duis esse esse proident non. Eu irure enim fugiat consequat elit amet velit incididunt eu duis Lorem culpa reprehenderit. Reprehenderit dolore qui enim est nulla proident.Lorem consectetur non quis culpa elit aliquip laboris. Laboris cupidatat aliqua dolor ipsum deserunt non minim excepteur. Magna adipisicing pariatur sit commodo enim Lorem nisi voluptate consequat eiusmod reprehenderit labore reprehenderit elit. Sit id magna Lorem incididunt. Mollit voluptate laborum ut sit sit sint mollit.Est tempor magna cillum officia veniam sunt ipsum ut aute. Amet nisi laboris officia sint sint minim voluptate labore laborum eiusmod consectetur incididunt fugiat ipsum. Sunt ea labore do cillum excepteur occaecat. Cillum mollit dolore labore esse consequat deserunt laborum deserunt nostrud eu. Nulla fugiat sit nulla non ea fugiat quis. Et ad sint tempor id anim aliqua est ad.Tempor magna ut amet excepteur amet. Eu est fugiat adipisicing deserunt in tempor qui nulla nulla dolore eiusmod cupidatat. Aliquip sint ex ex do voluptate cillum veniam laborum proident eu tempor culpa. Voluptate consectetur nulla consectetur cillum duis laboris sunt magna enim ea Lorem sint magna. Minim aliquip dolor occaecat commodo ea adipisicing ipsum est voluptate ut. Pariatur elit qui aute adipisicing nulla quis commodo et deserunt nisi irure ut. Proident pariatur labore irure pariatur magna mollit occaecat magna tempor irure duis sunt commodo irure.Id pariatur deserunt enim laborum ad aute do ad cupidatat magna. Non adipisicing eiusmod irure cupidatat sit laborum eu do eiusmod commodo aliquip enim ipsum in. Nisi esse ex ut eu deserunt. Elit laboris est ipsum excepteur tempor eiusmod ad laborum proident. Occaecat anim amet ex labore commodo duis aute mollit.Tempor dolore occaecat sunt ullamco laboris cupidatat nulla labore proident elit cillum qui commodo. Ea consectetur occaecat deserunt ad incididunt pariatur deserunt dolor id. Quis velit proident dolore labore nostrud. Laboris est sunt sint nulla dolor amet ullamco. Minim sit anim duis elit aliqua est ad laborum non consequat fugiat. Incididunt anim aute veniam sit sit in anim duis ut nulla Lorem nostrud.Eiusmod nostrud Lorem ullamco sit aute aliqua anim cupidatat qui culpa. Ut velit culpa pariatur occaecat. Pariatur cillum sint cillum esse in dolor irure ad.Sunt enim nostrud reprehenderit qui aute. Amet amet elit consequat magna Lorem velit dolore non aliqua dolor sint ex. Pariatur officia excepteur ad eiusmod dolor elit mollit eiusmod sit veniam magna. Ipsum sunt minim ipsum qui. Enim incididunt eiusmod officia esse do anim labore proident labore.Consequat pariatur id aute laboris. Do ut culpa eu aute occaecat irure eiusmod elit qui. Duis nulla Lorem ex nisi nostrud sint fugiat cillum. Adipisicing dolore enim in cillum ad dolor deserunt. Et cupidatat veniam ad et voluptate cupidatat excepteur. Aliquip ea voluptate ut sint pariatur officia. Commodo est cupidatat magna adipisicing deserunt excepteur in non Lorem nostrud qui.</p>
-                <p>Voluptate laboris sint exercitation velit culpa tempor dolor voluptate irure est. Culpa pariatur esse commodo mollit proident nulla aliquip velit eu reprehenderit irure fugiat. Duis esse esse proident non. Eu irure enim fugiat consequat elit amet velit incididunt eu duis Lorem culpa reprehenderit. Reprehenderit dolore qui enim est nulla proident.Lorem consectetur non quis culpa elit aliquip laboris. Laboris cupidatat aliqua dolor ipsum deserunt non minim excepteur. Magna adipisicing pariatur sit commodo enim Lorem nisi voluptate consequat eiusmod reprehenderit labore reprehenderit elit. Sit id magna Lorem incididunt. Mollit voluptate laborum ut sit sit sint mollit.Est tempor magna cillum officia veniam sunt ipsum ut aute. Amet nisi laboris officia sint sint minim voluptate labore laborum eiusmod consectetur incididunt fugiat ipsum. Sunt ea labore do cillum excepteur occaecat. Cillum mollit dolore labore esse consequat deserunt laborum deserunt nostrud eu. Nulla fugiat sit nulla non ea fugiat quis. Et ad sint tempor id anim aliqua est ad.Tempor magna ut amet excepteur amet. Eu est fugiat adipisicing deserunt in tempor qui nulla nulla dolore eiusmod cupidatat. Aliquip sint ex ex do voluptate cillum veniam laborum proident eu tempor culpa. Voluptate consectetur nulla consectetur cillum duis laboris sunt magna enim ea Lorem sint magna. Minim aliquip dolor occaecat commodo ea adipisicing ipsum est voluptate ut. Pariatur elit qui aute adipisicing nulla quis commodo et deserunt nisi irure ut. Proident pariatur labore irure pariatur magna mollit occaecat magna tempor irure duis sunt commodo irure.Id pariatur deserunt enim laborum ad aute do ad cupidatat magna. Non adipisicing eiusmod irure cupidatat sit laborum eu do eiusmod commodo aliquip enim ipsum in. Nisi esse ex ut eu deserunt. Elit laboris est ipsum excepteur tempor eiusmod ad laborum proident. Occaecat anim amet ex labore commodo duis aute mollit.Tempor dolore occaecat sunt ullamco laboris cupidatat nulla labore proident elit cillum qui commodo. Ea consectetur occaecat deserunt ad incididunt pariatur deserunt dolor id. Quis velit proident dolore labore nostrud. Laboris est sunt sint nulla dolor amet ullamco. Minim sit anim duis elit aliqua est ad laborum non consequat fugiat. Incididunt anim aute veniam sit sit in anim duis ut nulla Lorem nostrud.Eiusmod nostrud Lorem ullamco sit aute aliqua anim cupidatat qui culpa. Ut velit culpa pariatur occaecat. Pariatur cillum sint cillum esse in dolor irure ad.Sunt enim nostrud reprehenderit qui aute. Amet amet elit consequat magna Lorem velit dolore non aliqua dolor sint ex. Pariatur officia excepteur ad eiusmod dolor elit mollit eiusmod sit veniam magna. Ipsum sunt minim ipsum qui. Enim incididunt eiusmod officia esse do anim labore proident labore.Consequat pariatur id aute laboris. Do ut culpa eu aute occaecat irure eiusmod elit qui. Duis nulla Lorem ex nisi nostrud sint fugiat cillum. Adipisicing dolore enim in cillum ad dolor deserunt. Et cupidatat veniam ad et voluptate cupidatat excepteur. Aliquip ea voluptate ut sint pariatur officia. Commodo est cupidatat magna adipisicing deserunt excepteur in non Lorem nostrud qui.</p>
-                <h2 style={{marginBottom: '10px'}}>Discover more</h2>
-                <div className='discover'><LessonPreview /><LessonPreview /></div>
+                <h1 className='title'>{data.name}</h1>
+                <Markdown>{data.content}</Markdown>
+                <h2 className='discover-text'>Discover more</h2>
+                <div className='discover'>
+                    {discoverLessons.map((lesson, i) => (
+                        <LessonCard 
+                            key={i}
+                            id={lesson.id}
+                            name={lesson.name}
+                            content={lesson.content.slice(20)}
+                        />
+                    ))}
+                </div>
             </main>
-            <footer>Footer</footer>
+            <footer />
         </div>
     );
 }
 
-function LessonPreview({lessonId='/lesson/placeholder', lessonName='Lesson Name', lessonImage=placeholder, lessonContents='Lesson contents...'}) {
-    return (
-        <Link className='lesson-container' to={lessonId}>
-            <img className='lesson-image' src={lessonImage} alt=''/>
-            <h2 className='lesson-title'>{lessonName}</h2>
-            <p className='lesson-preview'>{lessonContents}</p>
-        </Link>
-    );
+async function getContent(id) {
+    const docRef = doc(db, "Lessons", id);
+    const docSnap = await getDoc(docRef);
+
+    return docSnap.data();
 }
 
 export default LessonPage;

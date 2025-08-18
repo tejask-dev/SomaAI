@@ -7,13 +7,13 @@
         "navbar navbar"
         "sidebar main"
         "footer footer";
+    background-color: #eff6ff;
 }
 
 nav {
     top: 0;
     position: sticky;
     grid-area: navbar;
-    padding: 1em;
 }
 
 aside {
@@ -26,6 +26,33 @@ aside {
 
 main {
     grid-area: main;
+    padding-top: 2vh;
+}
+
+.title {
+    font-size: 3rem;
+    font-weight: 700;
+}
+
+h2 {
+    padding-bottom: 1vh;
+    padding-top: 3vh;
+}
+
+h2 strong {
+    font-size: 2rem;
+}
+
+p {
+    font-size: 1.1rem;
+    max-width: 50vw;
+}
+
+main ul {
+    margin-top: 1em;
+    margin-bottom: 1em;
+    margin-left: 2em;
+    list-style-type: disc;
 }
 
 footer {
@@ -39,7 +66,16 @@ footer {
 
 .discover {
     display: grid;
-    grid-template-columns: repeat(auto-fit, 250px);
+    gap: 1em;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-right: 25vw;
+}
+
+.discover-text {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-top: 2vh;
+    margin-bottom: 2vh;
 }
 
 .lesson-container {
@@ -48,11 +84,10 @@ footer {
     align-items: center;
     color: black;
     text-decoration: none;
-}
-
-.lesson-image {
-    height: 250px;
-    aspect-ratio: 9 / 10;
+    background-color: white;
+    margin: 1em;
+    padding: 1em;
+    border-radius: 10px;
 }
 
 .lesson-title {
