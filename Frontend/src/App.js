@@ -5,6 +5,7 @@ import "./App.css";
 import deepakPhoto from "./assets/Daniel.jpg";
 import tejasPhoto from "./assets/tejas-1.jpg";
 import samPhoto from "./assets/swanish.jpg";
+import ChatApp from './ChatApp';
 
 export default function App() {
   const location = useLocation();
@@ -20,6 +21,9 @@ export default function App() {
       <FAQ />
       <Team />
       <Footer />
+      <div className="App">
+        <ChatApp />
+      </div>
     </div>
   );
 }
