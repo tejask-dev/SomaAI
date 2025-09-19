@@ -21,9 +21,6 @@ export default function App() {
       <FAQ />
       <Team />
       <Footer />
-      <div className="App">
-        <ChatApp />
-      </div>
     </div>
   );
 }
