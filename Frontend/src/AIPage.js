@@ -11,7 +11,7 @@ import {
 	doc,
 	getDocs,
 	updateDoc,
-	onSnapshot,
+	getDoc,
 } from "firebase/firestore";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -36,53 +36,61 @@ export default function ChatbotPage() {
 				isFullScreen
 					? "fixed inset-0 z-50 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50"
 					: "min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50"
-			} text-slate-800`}>
+			} text-slate-800`}
+		>
 			{/* Always show navbar, but adjust styling for full-screen */}
 			<div
 				className={`${
 					isFullScreen ? "absolute top-0 left-0 right-0 z-[60]" : ""
-				}`}>
+				}`}
+			>
 				<Navbar />
 			</div>
 
 			<main
 				className={`flex-1 flex flex-col w-full items-center justify-center px-4 py-8 ${
 					isFullScreen ? "pt-32" : "pt-24"
-				}`}>
+				}`}
+			>
 				<motion.div
 					initial={{ opacity: 0, y: 20 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ duration: 0.6 }}
 					className={`flex flex-col md:flex-row w-full h-full ${
 						isFullScreen ? "max-w-none" : "max-w-7xl"
-					} grow gap-8`}>
+					} grow gap-8`}
+				>
 					{/* Left panel text - hide in full screen */}
 					{!isFullScreen && (
 						<motion.div
 							initial={{ opacity: 0, x: -50 }}
 							animate={{ opacity: 1, x: 0 }}
 							transition={{ duration: 0.8, delay: 0.2 }}
-							className='hidden md:flex flex-1 flex-col items-center justify-center'>
+							className="hidden md:flex flex-1 flex-col items-center justify-center"
+						>
 							<motion.h1
 								initial={{ scale: 0.8 }}
 								animate={{ scale: 1 }}
 								transition={{ duration: 0.6, delay: 0.4 }}
-								className='text-5xl font-extrabold mb-6 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent'>
+								className="text-5xl font-extrabold mb-6 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent"
+							>
 								SomaAI Chat
 							</motion.h1>
 							<motion.p
 								initial={{ opacity: 0 }}
 								animate={{ opacity: 1 }}
 								transition={{ duration: 0.8, delay: 0.6 }}
-								className='text-xl max-w-md text-center mb-8 text-slate-600 leading-relaxed'>
+								className="text-xl max-w-md text-center mb-8 text-slate-600 leading-relaxed"
+							>
 								Ask anything about health, safety, or growing up. Our AI is
 								always ready to help—privately and kindly.
 							</motion.p>
 							<motion.a
 								whileHover={{ scale: 1.05, y: -2 }}
 								whileTap={{ scale: 0.95 }}
-								href='/lessons'
-								className='bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-2xl shadow-2xl font-bold text-lg hover:shadow-indigo-500/25 transition-all duration-300'>
+								href="/lessons"
+								className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-2xl shadow-2xl font-bold text-lg hover:shadow-indigo-500/25 transition-all duration-300"
+							>
 								Browse Lessons
 							</motion.a>
 						</motion.div>
@@ -96,7 +104,8 @@ export default function ChatbotPage() {
 							isFullScreen
 								? "flex-1 w-full h-[calc(100vh-120px)]"
 								: "w-full md:w-[500px] h-[600px]"
-						}`}>
+						}`}
+					>
 						<ChatBox
 							user={user}
 							lang={lang}
@@ -150,14 +159,25 @@ function ChatBox({ user, lang, setLang, isFullScreen, setIsFullScreen }) {
 	};
 
 	// Load selected chat
-	const loadChat = (id) => {
+	const loadChat = async (id) => {
+		// Don't do anything if AI is currently generating a response
+		if (aiTyping) return;
+
 		setChatId(id);
 		setSessionId(null);
-		onSnapshot(doc(db, "users", user.uid, "chats", chatId), (snap) => {
+
+		try {
+			const ref = doc(db, "users", user.uid, "chats", id);
+			const snap = await getDoc(ref);
+
 			if (snap.exists()) {
 				setMessages(snap.data().messages || []);
+			} else {
+				console.log("No such document!");
 			}
-		});
+		} catch (err) {
+			console.error("Error fetching chat:", err);
+		}
 	};
 
 	// Save current chat to history
@@ -281,7 +301,7 @@ function ChatBox({ user, lang, setLang, isFullScreen, setIsFullScreen }) {
 	}
 
 	return (
-		<div className='flex w-full h-full'>
+		<div className="flex w-full h-full">
 			{/* History Sidebar - only show in full screen */}
 			{isFullScreen && (
 				<AnimatePresence>
@@ -291,21 +311,23 @@ function ChatBox({ user, lang, setLang, isFullScreen, setIsFullScreen }) {
 							animate={{ width: 300, opacity: 1 }}
 							exit={{ width: 0, opacity: 0 }}
 							transition={{ duration: 0.3 }}
-							className='bg-white border-r border-slate-200 shadow-lg overflow-hidden'>
-							<div className='p-4 border-b border-slate-200'>
-								<h3 className='text-lg font-bold text-slate-800'>
+							className="bg-white border-r border-slate-200 shadow-lg overflow-hidden"
+						>
+							<div className="p-4 border-b border-slate-200">
+								<h3 className="text-lg font-bold text-slate-800">
 									Chat History
 								</h3>
 							</div>
-							<div className='p-4'>
+							<div className="p-4">
 								<motion.button
 									whileHover={{ scale: 1.02 }}
 									whileTap={{ scale: 0.98 }}
 									onClick={startNewChat}
-									className='w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-3 px-4 rounded-xl font-semibold shadow-lg hover:shadow-indigo-500/25 transition-all duration-200 mb-4'>
+									className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-3 px-4 rounded-xl font-semibold shadow-lg hover:shadow-indigo-500/25 transition-all duration-200 mb-4"
+								>
 									✨ New Chat
 								</motion.button>
-								<div className='space-y-2 max-h-[calc(100vh-300px)] overflow-y-auto'>
+								<div className="space-y-2 max-h-[calc(100vh-300px)] overflow-y-auto">
 									{chatSessions.map((chat) => (
 										<motion.div
 											key={chat.id}
@@ -315,9 +337,10 @@ function ChatBox({ user, lang, setLang, isFullScreen, setIsFullScreen }) {
 													? "bg-indigo-100 border border-indigo-300"
 													: "bg-slate-50 hover:bg-slate-100"
 											}`}
-											onClick={() => loadChat(chat.id)}>
-											<div className='flex items-center justify-between'>
-												<p className='text-sm font-medium text-slate-800 truncate'>
+											onClick={() => loadChat(chat.id)}
+										>
+											<div className="flex items-center justify-between">
+												<p className="text-sm font-medium text-slate-800 truncate">
 													{chat.title}
 												</p>
 												<button
@@ -325,11 +348,12 @@ function ChatBox({ user, lang, setLang, isFullScreen, setIsFullScreen }) {
 														e.stopPropagation();
 														deleteChat(chat.id);
 													}}
-													className='text-red-500 hover:text-red-700 text-xs'>
+													className="text-red-500 hover:text-red-700 text-xs"
+												>
 													🗑️
 												</button>
 											</div>
-											<p className='text-xs text-slate-500 mt-1'>
+											<p className="text-xs text-slate-500 mt-1">
 												{new Date(chat.timestamp.toDate()).toLocaleDateString()}
 											</p>
 										</motion.div>
@@ -344,31 +368,34 @@ function ChatBox({ user, lang, setLang, isFullScreen, setIsFullScreen }) {
 			{/* Main Chat Area */}
 			<motion.div
 				layout
-				className={`flex flex-col w-full h-full bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden transition-all duration-500`}>
+				className={`flex flex-col w-full h-full bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden transition-all duration-500`}
+			>
 				{/* Chat Header */}
-				<div className='bg-gradient-to-r from-indigo-500 to-purple-500 p-4 text-white'>
-					<div className='flex items-center justify-between'>
-						<div className='flex items-center space-x-3'>
+				<div className="bg-gradient-to-r from-indigo-500 to-purple-500 p-4 text-white">
+					<div className="flex items-center justify-between">
+						<div className="flex items-center space-x-3">
 							<motion.div
 								animate={{ rotate: 360 }}
 								transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-								className='w-8 h-8 bg-white/20 rounded-full flex items-center justify-center'>
+								className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center"
+							>
 								🤖
 							</motion.div>
 							<div>
-								<h3 className='font-bold text-lg'>SomaAI Assistant</h3>
-								<p className='text-sm text-indigo-100'>Always here to help</p>
+								<h3 className="font-bold text-lg">SomaAI Assistant</h3>
+								<p className="text-sm text-indigo-100">Always here to help</p>
 							</div>
 						</div>
-						<div className='flex items-center space-x-2'>
+						<div className="flex items-center space-x-2">
 							{/* History Sidebar Toggle - only show in full screen */}
 							{isFullScreen && (
 								<motion.button
 									whileHover={{ scale: 1.1 }}
 									whileTap={{ scale: 0.9 }}
 									onClick={() => setShowHistorySidebar(!showHistorySidebar)}
-									className='p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors'
-									title={showHistorySidebar ? "Hide History" : "Show History"}>
+									className="p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
+									title={showHistorySidebar ? "Hide History" : "Show History"}
+								>
 									📚
 								</motion.button>
 							)}
@@ -377,8 +404,9 @@ function ChatBox({ user, lang, setLang, isFullScreen, setIsFullScreen }) {
 								whileHover={{ scale: 1.1 }}
 								whileTap={{ scale: 0.9 }}
 								onClick={() => setIsFullScreen(!isFullScreen)}
-								className='p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors'
-								title={isFullScreen ? "Exit Full Screen" : "Full Screen"}>
+								className="p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
+								title={isFullScreen ? "Exit Full Screen" : "Full Screen"}
+							>
 								{isFullScreen ? "⛶" : "⛶"}
 							</motion.button>
 							{/* Settings Button */}
@@ -386,7 +414,8 @@ function ChatBox({ user, lang, setLang, isFullScreen, setIsFullScreen }) {
 								whileHover={{ scale: 1.1 }}
 								whileTap={{ scale: 0.9 }}
 								onClick={() => setShowSidebar(!showSidebar)}
-								className='p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors'>
+								className="p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
+							>
 								⚙️
 							</motion.button>
 						</div>
@@ -396,13 +425,14 @@ function ChatBox({ user, lang, setLang, isFullScreen, setIsFullScreen }) {
 				{/* Messages Area */}
 				<div
 					ref={listRef}
-					className='flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50'
+					className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50"
 					style={{
 						maxHeight: isFullScreen
 							? "calc(100vh - 280px)"
 							: "calc(600px - 200px)",
 						paddingBottom: isFullScreen ? "120px" : "80px",
-					}}>
+					}}
+				>
 					{messages.map((message, index) => (
 						<Message key={index} role={message.role} text={message.text} />
 					))}
@@ -410,32 +440,34 @@ function ChatBox({ user, lang, setLang, isFullScreen, setIsFullScreen }) {
 				</div>
 
 				{/* Input Area - Fixed positioning */}
-				<div className='bg-white border-t border-slate-200 p-4'>
-					<form onSubmit={sendMessage} className='flex items-center space-x-3'>
+				<div className="bg-white border-t border-slate-200 p-4">
+					<form onSubmit={sendMessage} className="flex items-center space-x-3">
 						<input
-							type='text'
+							type="text"
 							value={input}
 							onChange={(e) => setInput(e.target.value)}
-							placeholder='Type your question...'
-							className='flex-1 px-4 py-3 border border-slate-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none text-sm'
+							placeholder="Type your question..."
+							className="flex-1 px-4 py-3 border border-slate-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none text-sm"
 							style={{
 								maxHeight: isFullScreen ? "80px" : "48px",
 								minHeight: "48px",
 							}}
 						/>
 						<motion.button
-							type='submit'
+							type="submit"
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}
 							disabled={!input.trim() || aiTyping}
-							className='bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-6 py-3 rounded-2xl font-semibold shadow-lg hover:shadow-indigo-500/25 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 text-sm'>
+							className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-6 py-3 rounded-2xl font-semibold shadow-lg hover:shadow-indigo-500/25 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 text-sm"
+						>
 							<span>Send</span>
 							<motion.span
 								animate={{ x: [0, 5, 0] }}
 								transition={{
 									duration: 1,
 									repeat: Infinity,
-								}}>
+								}}
+							>
 								→
 							</motion.span>
 						</motion.button>
@@ -452,7 +484,8 @@ function Message({ role, text }) {
 		<motion.div
 			className={`flex ${isUser ? "justify-end" : "justify-start"}`}
 			whileHover={{ scale: 1.02 }}
-			transition={{ duration: 0.2 }}>
+			transition={{ duration: 0.2 }}
+		>
 			<motion.div
 				initial={{ opacity: 0, scale: 0.8 }}
 				animate={{ opacity: 1, scale: 1 }}
@@ -466,7 +499,8 @@ function Message({ role, text }) {
 					fontFamily: isUser ? undefined : "inherit",
 					marginLeft: isUser ? "auto" : 0,
 					marginRight: !isUser ? "auto" : 0,
-				}}>
+				}}
+			>
 				<ReactMarkdown
 					components={{
 						strong: ({ node, ...props }) => (
@@ -481,7 +515,8 @@ function Message({ role, text }) {
 						ul: ({ node, ...props }) => (
 							<ul style={{ margin: "0.3em 0 0.3em 1.5em" }} {...props} />
 						),
-					}}>
+					}}
+				>
 					{text}
 				</ReactMarkdown>
 			</motion.div>
@@ -494,27 +529,31 @@ function TypingIndicator() {
 		<motion.div
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
-			className='flex justify-start'>
-			<div className='px-4 py-3 rounded-2xl bg-white border border-slate-200 text-slate-800 flex items-center space-x-2 text-sm shadow-lg'>
+			className="flex justify-start"
+		>
+			<div className="px-4 py-3 rounded-2xl bg-white border border-slate-200 text-slate-800 flex items-center space-x-2 text-sm shadow-lg">
 				<motion.span
 					animate={{ y: [0, -5, 0] }}
 					transition={{ duration: 0.6, repeat: Infinity, delay: 0 }}
-					className='text-indigo-500'>
+					className="text-indigo-500"
+				>
 					●
 				</motion.span>
 				<motion.span
 					animate={{ y: [0, -5, 0] }}
 					transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }}
-					className='text-purple-500'>
+					className="text-purple-500"
+				>
 					●
 				</motion.span>
 				<motion.span
 					animate={{ y: [0, -5, 0] }}
 					transition={{ duration: 0.6, repeat: Infinity, delay: 0.4 }}
-					className='text-pink-500'>
+					className="text-pink-500"
+				>
 					●
 				</motion.span>
-				<span className='ml-2 text-slate-600'>AI is typing...</span>
+				<span className="ml-2 text-slate-600">AI is typing...</span>
 			</div>
 		</motion.div>
 	);
@@ -526,7 +565,8 @@ function Footer() {
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
 			transition={{ duration: 0.8, delay: 1 }}
-			className='py-6 text-center text-sm text-slate-500 border-t border-slate-200 bg-white/50 backdrop-blur-sm'>
+			className="py-6 text-center text-sm text-slate-500 border-t border-slate-200 bg-white/50 backdrop-blur-sm"
+		>
 			© {new Date().getFullYear()} SomaAI — Built for learning and empowerment.
 		</motion.footer>
 	);
