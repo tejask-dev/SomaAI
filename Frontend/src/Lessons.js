@@ -209,36 +209,21 @@ export default function Lessons() {
 								className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
 							>
 								{filteredLessons.map((lesson, index) => (
-									<motion.div
+									<LessonCard
 										key={lesson.id}
-										initial={{ opacity: 0, y: 30, scale: 0.9 }}
-										animate={{ opacity: 1, y: 0, scale: 1 }}
-										transition={{
-											duration: 0.5,
-											delay: index * 0.1,
-											type: "spring",
-											stiffness: 100,
-										}}
-										whileHover={{
-											y: -8,
-											scale: 1.02,
-											transition: { duration: 0.2 },
-										}}
-									>
-										<LessonCard
-											id={lesson.id}
-											name={lesson.name}
-											content={
-												lesson.content.length > 100
-													? lesson.content
-															.slice(20, lesson.content.lastIndexOf(" ", 120))
-															.replace(/[.,?!]+$/g, "") // Regex that looks like wizardry but removes punctuation from the end
-															.replace(/\*\*/g, "") + // Remove bold syntax
-													  "..."
-													: lesson.content
-											}
-										/>
-									</motion.div>
+										id={lesson.id}
+										name={lesson.name}
+										index={index}
+										content={
+											lesson.content.length > 100
+												? lesson.content
+														.slice(20, lesson.content.lastIndexOf(" ", 120))
+														.replace(/[.,?!]+$/g, "") // Regex that looks like wizardry but removes punctuation from the end
+														.replace(/\*\*/g, "") + // Remove bold syntax
+												  "..."
+												: lesson.content
+										}
+									/>
 								))}
 							</motion.div>
 						) : (
