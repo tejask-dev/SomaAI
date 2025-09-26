@@ -124,11 +124,15 @@ function ChatBox({ user, lang, setLang, isFullScreen, setIsFullScreen }) {
 	const [chatId, setChatId] = useState(null);
 	const [showHistorySidebar, setShowHistorySidebar] = useState(true);
 	const listRef = useRef(null);
+	const prevMessagesRef = useRef(messages);
 
 	useEffect(() => {
-		// Always scroll to bottom
-		listRef.current?.lastElementChild?.scrollIntoView({ behavior: "smooth" });
-	}, [messages, aiTyping]);
+		// Only scroll if a new message was added
+		if (messages.length > prevMessagesRef.current.length) {
+			listRef.current?.lastElementChild?.scrollIntoView({ behavior: "smooth" });
+		}
+		prevMessagesRef.current = messages;
+	}, [messages]);
 
 	// Create new chat session
 	const startNewChat = () => {
@@ -356,7 +360,7 @@ function ChatBox({ user, lang, setLang, isFullScreen, setIsFullScreen }) {
 
 			{/* Main Chat Area */}
 			<motion.div
-				className={`flex flex-col w-full h-full bg-white border border-slate-200 overflow-hidden transition-all duration-500`}>
+				className={`flex flex-col w-full h-full bg-white border border-r-0 border-slate-200 overflow-hidden transition-all duration-500`}>
 				{/* Chat Header */}
 				<div className='bg-gradient-to-r from-indigo-500 to-purple-500 p-4 text-white'>
 					<div className='flex items-center justify-between'>
@@ -374,16 +378,18 @@ function ChatBox({ user, lang, setLang, isFullScreen, setIsFullScreen }) {
 						</div>
 						<div className='flex items-center space-x-2'>
 							{/* History Sidebar Toggle - only show in full screen */}
-							{isFullScreen && (
-								<motion.button
-									whileHover={{ scale: 1.1 }}
-									whileTap={{ scale: 0.9 }}
-									onClick={() => setShowHistorySidebar(!showHistorySidebar)}
-									className='p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors'
-									title={showHistorySidebar ? "Hide History" : "Show History"}>
-									📚
-								</motion.button>
-							)}
+							<motion.button
+								whileHover={{ scale: 1.1 }}
+								whileTap={{ scale: 0.9 }}
+								onClick={() =>
+									isFullScreen
+										? setShowHistorySidebar(!showHistorySidebar)
+										: setIsFullScreen(true)
+								}
+								className='p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors'
+								title={showHistorySidebar ? "Hide History" : "Show History"}>
+								📚
+							</motion.button>
 							{/* Full Screen Button */}
 							<motion.button
 								whileHover={{ scale: 1.1 }}
