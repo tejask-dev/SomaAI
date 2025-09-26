@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -23,6 +23,7 @@ const Page = ({ name, path }) => {
 
 export default function Navbar() {
 	const { user, signout } = useAuth();
+	const navigate = useNavigate();
 	const [isScrolled, setIsScrolled] = useState(false);
 	const pages = [
 		{ name: "📚 Lessons", path: "/lessons" },
@@ -76,18 +77,26 @@ export default function Navbar() {
 					))}
 
 					<AnimatePresence>
-						{showSignOut && (
-							<motion.button
-								initial={{ opacity: 0, scale: 0.8 }}
-								animate={{ opacity: 1, scale: 1 }}
-								exit={{ opacity: 0, scale: 0.8 }}
-								whileHover={{ scale: 1.05, y: -2 }}
-								whileTap={{ scale: 0.95 }}
-								onClick={signout}
-								className='ml-3 bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-2 rounded-xl hover:shadow-lg hover:shadow-red-500/25 text-sm font-semibold transition-all duration-300'>
-								Sign Out
-							</motion.button>
-						)}
+						<motion.button
+							initial={{ opacity: 0, scale: 0.8 }}
+							animate={{ opacity: 1, scale: 1 }}
+							exit={{ opacity: 0, scale: 0.8 }}
+							whileHover={{ scale: 1.05, y: -2 }}
+							whileTap={{ scale: 0.95 }}
+							onClick={
+								showSignOut
+									? signout
+									: () => {
+											navigate("/signin");
+									  }
+							}
+							className={`ml-3 bg-gradient-to-r text-white px-4 py-2 rounded-xl hover:shadow-lg hover:shadow-red-500/25 text-sm font-semibold transition-all duration-1Z00 ${
+								showSignOut
+									? "from-red-500 to-pink-500"
+									: "from-indigo-600 to-purple-600"
+							}`}>
+							{showSignOut ? "Sign Out" : "Sign In"}
+						</motion.button>
 					</AnimatePresence>
 				</nav>
 			</div>
