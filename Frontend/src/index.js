@@ -11,18 +11,18 @@ import "./index.css";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-  <React.StrictMode>
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route index element={<App />} />
-          <Route path="chat" element={<AIPage />} />
-          <Route path="lessons" element={<Lessons />} />
-          <Route path="lesson/:id" element={<LessonPage />} />
-          <Route path="signin" element={<SignInPage />} />
-          <Route path="*" element={<h1>Error 404: Page not found.</h1>} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
-  </React.StrictMode>
+	<React.StrictMode>
+		<AuthProvider>
+			<BrowserRouter>
+				<Routes>
+					<Route index element={<App />} />
+					<Route path='chat' element={<AIPage />} />
+					<Route path='lessons' element={<Lessons />} />
+					<Route path='lesson/:id' element={<LessonPage />} />
+					<Route path='signin' element={<SignInPage />} />
+					<Route path='*' element={<h1>Error 404: Page not found.</h1>} />
+				</Routes>
+			</BrowserRouter>
+		</AuthProvider>
+	</React.StrictMode>
 );

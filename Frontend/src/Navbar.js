@@ -1,50 +1,105 @@
-import React from "react";
-import { useLocation, Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
+import { motion, AnimatePresence } from "framer-motion";
+
+const Page = ({ name, path }) => {
+	const location = useLocation();
+
+	return (
+		<motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.95 }}>
+			<Link
+				to={path}
+				className={`sticky px-3 py-2 rounded-lg transition-all duration-300 ${
+					location.pathname.startsWith(path)
+						? "text-indigo-600 bg-indigo-50"
+						: "text-slate-600 hover:text-indigo-600 hover:bg-slate-50"
+				}`}>
+				{name}
+			</Link>
+		</motion.div>
+	);
+};
 
 export default function Navbar() {
-  const { user, signout } = useAuth();
-  const location = useLocation();
+	const { user, signout } = useAuth();
+	const navigate = useNavigate();
+	const [isScrolled, setIsScrolled] = useState(false);
+	const pages = [
+		{ name: "📚 Lessons", path: "/lessons" },
+		{ name: "🤖 Chatbot", path: "/chat" },
+	];
 
-  // Only show Sign Out button on /chat or /chatbot route and if signout exists
-  const showSignOut = user && typeof signout === "function" && (
-    location.pathname === "/chat" || location.pathname === "/chatbot"
-  );
+	// Only show Sign Out button if signout exists
+	const showSignOut = user && typeof signout === "function";
 
-  return (
-    <header className="w-full bg-white shadow-sm border-b border-emerald-100 p-4 flex justify-between items-center">
-      <Link to="/" className="inline-flex items-center gap-2 focus:outline-none">
-        <div className="h-8 w-8 rounded-xl bg-emerald-600 grid place-items-center text-white font-black shadow-md transition-all duration-300">
-          S
-        </div>
-        <span className="font-semibold tracking-tight text-lg">SomaAI</span>
-      </Link>
-      <nav className="flex gap-6 items-center text-sm font-semibold">
-        <Link
-          to="/lessons"
-          className={`hover:text-emerald-700 ${
-            location.pathname.startsWith("/lessons") ? "text-emerald-700 underline" : ""
-          }`}
-        >
-          Lessons
-        </Link>
-        <Link
-          to="/chat"
-          className={`hover:text-emerald-700 ${
-            (location.pathname === "/chat" || location.pathname === "/chatbot") ? "text-emerald-700 underline" : ""
-          }`}
-        >
-          Chatbot
-        </Link>
-        {showSignOut && (
-          <button
-            onClick={signout}
-            className="ml-3 bg-emerald-600 text-white px-3 py-1 rounded hover:bg-emerald-700 text-sm"
-          >
-            Sign Out
-          </button>
-        )}
-      </nav>
-    </header>
-  );
+	// Handle scroll effect
+	useEffect(() => {
+		const handleScroll = () => {
+			setIsScrolled(window.scrollY > 20);
+		};
+		window.addEventListener("scroll", handleScroll);
+		return () => window.removeEventListener("scroll", handleScroll);
+	}, []);
+
+	return (
+		<motion.header
+			initial={{ y: -100 }}
+			animate={{ y: 0 }}
+			transition={{ duration: 0.6, type: "spring" }}
+			className={`w-full fixed top-0 z-50 transition-all duration-300 ${
+				isScrolled
+					? "bg-white/90 backdrop-blur-md shadow-lg border-b border-slate-200"
+					: "bg-white/80 backdrop-blur-sm border-b border-slate-100"
+			}`}>
+			<div className='px-4 py-4 flex justify-between items-center'>
+				<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+					<Link
+						to='/'
+						className='inline-flex items-center gap-3 focus:outline-none group'>
+						<motion.div
+							whileHover={{ rotate: 360 }}
+							transition={{ duration: 0.6 }}
+							className='h-10 w-10 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 grid place-items-center text-white font-black shadow-lg group-hover:shadow-indigo-500/25 transition-all duration-300'>
+							S
+						</motion.div>
+						<motion.span
+							className='font-bold tracking-tight text-xl bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent'
+							whileHover={{ scale: 1.02 }}>
+							SomaAI
+						</motion.span>
+					</Link>
+				</motion.div>
+
+				<nav className='flex gap-8 items-center text-sm font-semibold'>
+					{pages.map((page, index) => (
+						<Page {...page} key={index} />
+					))}
+
+					<AnimatePresence>
+						<motion.button
+							initial={{ opacity: 0, scale: 0.8 }}
+							animate={{ opacity: 1, scale: 1 }}
+							exit={{ opacity: 0, scale: 0.8 }}
+							whileHover={{ scale: 1.05, y: -2 }}
+							whileTap={{ scale: 0.95 }}
+							onClick={
+								showSignOut
+									? signout
+									: () => {
+											navigate("/signin");
+									  }
+							}
+							className={`ml-3 bg-gradient-to-r text-white px-4 py-2 rounded-xl hover:shadow-lg hover:shadow-red-500/25 text-sm font-semibold transition-all duration-1Z00 ${
+								showSignOut
+									? "from-red-500 to-pink-500"
+									: "from-indigo-600 to-purple-600"
+							}`}>
+							{showSignOut ? "Sign Out" : "Sign In"}
+						</motion.button>
+					</AnimatePresence>
+				</nav>
+			</div>
+		</motion.header>
+	);
 }
