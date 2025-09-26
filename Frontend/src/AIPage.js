@@ -82,7 +82,7 @@ export default function ChatbotPage() {
 								whileHover={{ scale: 1.05, y: -2 }}
 								whileTap={{ scale: 0.95 }}
 								href='/lessons'
-								className='bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-2xl shadow-2xl font-bold text-lg hover:shadow-indigo-500/25 transition-all duration-300'>
+								className='bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-2xl shadow-2xl font-bold text-lg hover:shadow-indigo-500/25 transition-all duration-100'>
 								Browse Lessons
 							</motion.a>
 						</motion.div>
