@@ -47,42 +47,44 @@ export default function ChatbotPage() {
 
 			<main
 				className={`flex-1 flex flex-col w-full h-full items-center justify-center ${
-					isFullScreen ? "pt-[4.5rem] py-0" : "pt-24 py-8"
-				}`}>
+					isFullScreen
+						? "pt-16 sm:pt-20 md:pt-[4.5rem] py-0"
+						: "pt-20 sm:pt-24 md:pt-28 py-4 sm:py-6 md:py-8"
+				} px-2 sm:px-4`}>
 				<motion.div
 					initial={{ opacity: 0, y: 20 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ duration: 0.6 }}
 					className={`flex flex-col md:flex-row w-full h-full ${
 						isFullScreen ? "max-w-none" : "max-w-7xl"
-					} grow gap-8`}>
-					{/* Left panel text - hide in full screen */}
+					} grow gap-4 sm:gap-6 md:gap-8`}>
+					{/* Left panel text - hide in full screen and on mobile */}
 					{!isFullScreen && (
 						<motion.div
 							initial={{ opacity: 0, x: -50 }}
 							animate={{ opacity: 1, x: 0 }}
 							transition={{ duration: 0.8, delay: 0.2 }}
-							className='hidden md:flex flex-1 flex-col items-center justify-center'>
+							className="hidden md:flex flex-1 flex-col items-center justify-center px-4">
 							<motion.h1
 								initial={{ scale: 0.8 }}
 								animate={{ scale: 1 }}
 								transition={{ duration: 0.6, delay: 0.4 }}
-								className='text-5xl font-extrabold mb-6 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent'>
+								className="text-4xl md:text-5xl font-extrabold mb-4 md:mb-6 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent text-center">
 								SomaAI Chat
 							</motion.h1>
 							<motion.p
 								initial={{ opacity: 0 }}
 								animate={{ opacity: 1 }}
 								transition={{ duration: 0.8, delay: 0.6 }}
-								className='text-xl max-w-md text-center mb-8 text-slate-600 leading-relaxed'>
+								className="text-lg md:text-xl max-w-md text-center mb-6 md:mb-8 text-slate-600 leading-relaxed">
 								Ask anything about health, safety, or growing up. Our AI is
 								always ready to help—privately and kindly.
 							</motion.p>
 							<motion.a
 								whileHover={{ scale: 1.05, y: -2 }}
 								whileTap={{ scale: 0.95 }}
-								href='/lessons'
-								className='bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-2xl shadow-2xl font-bold text-lg hover:shadow-indigo-500/25 transition-all duration-100'>
+								href="/lessons"
+								className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 md:px-8 py-3 md:py-4 rounded-xl md:rounded-2xl shadow-2xl font-bold text-base md:text-lg hover:shadow-indigo-500/25 transition-all duration-300">
 								Browse Lessons
 							</motion.a>
 						</motion.div>
@@ -92,10 +94,10 @@ export default function ChatbotPage() {
 						initial={{ opacity: 0, x: isFullScreen ? 0 : 50 }}
 						animate={{ opacity: 1, x: 0 }}
 						transition={{ duration: 0.8, delay: 0.3 }}
-						className={`flex flex-col items-stretch justify-end self-center ${
+						className={`flex flex-col items-stretch justify-end self-center w-full ${
 							isFullScreen
-								? "flex-1 w-full h-full"
-								: "w-full md:w-[500px] h-[550px]"
+								? "flex-1 h-full"
+								: "md:w-[500px] h-[calc(100vh-12rem)] sm:h-[600px] md:h-[550px] max-h-[90vh]"
 						}`}>
 						<ChatBox
 							user={user}
@@ -306,51 +308,60 @@ function ChatBox({ user, lang, setLang, isFullScreen, setIsFullScreen }) {
 					{showHistorySidebar && (
 						<motion.div
 							initial={{ width: 0, opacity: 0 }}
-							animate={{ width: 300, opacity: 1 }}
+							animate={{ width: 280, opacity: 1 }}
 							exit={{ width: 0, opacity: 0 }}
 							transition={{ type: "spring", bounce: 0 }}
-							className='bg-white border-r border-slate-200 overflow-hidden whitespace-nowrap'>
-							<div className='p-4 border-b border-slate-200'>
-								<h3 className='text-lg font-bold text-slate-800'>
+							className="bg-white border-r border-slate-200 overflow-hidden">
+							<div className="p-3 sm:p-4 border-b border-slate-200">
+								<h3 className="text-base sm:text-lg font-bold text-slate-800">
 									Chat History
 								</h3>
 							</div>
-							<div className='p-4'>
+							<div className="p-3 sm:p-4">
 								<motion.button
 									whileHover={{ scale: 1.02 }}
 									whileTap={{ scale: 0.98 }}
 									onClick={startNewChat}
-									className='w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-3 px-4 rounded-xl font-semibold shadow-lg hover:shadow-indigo-500/25 transition-all duration-200 mb-4'>
+									className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl font-semibold shadow-lg hover:shadow-indigo-500/25 transition-all duration-200 mb-3 sm:mb-4 text-sm sm:text-base">
 									✨ New Chat
 								</motion.button>
-								<div className='space-y-2 max-h-[calc(100vh-300px)] overflow-y-auto'>
-									{chatSessions.map((chat) => (
-										<motion.div
-											key={chat.id}
-											className={`p-3 rounded-lg cursor-pointer transition-all duration-200 ${
-												chatId === chat.id
-													? "bg-indigo-100 border border-indigo-300"
-													: "bg-slate-50 hover:bg-slate-100"
-											}`}
-											onClick={() => loadChat(chat.id)}>
-											<div className='flex items-center justify-between'>
-												<p className='text-sm font-medium text-slate-800 truncate'>
-													{chat.title}
+								<div className="space-y-2 max-h-[calc(100vh-250px)] sm:max-h-[calc(100vh-300px)] overflow-y-auto">
+									{chatSessions.length === 0 ? (
+										<p className="text-xs sm:text-sm text-slate-500 text-center py-4">
+											No chat history yet
+										</p>
+									) : (
+										chatSessions.map((chat) => (
+											<motion.div
+												key={chat.id}
+												whileHover={{ scale: 1.02 }}
+												whileTap={{ scale: 0.98 }}
+												className={`p-2.5 sm:p-3 rounded-lg cursor-pointer transition-all duration-200 ${
+													chatId === chat.id
+														? "bg-indigo-100 border border-indigo-300"
+														: "bg-slate-50 hover:bg-slate-100"
+												}`}
+												onClick={() => loadChat(chat.id)}>
+												<div className="flex items-center justify-between gap-2">
+													<p className="text-xs sm:text-sm font-medium text-slate-800 truncate flex-1">
+														{chat.title}
+													</p>
+													<button
+														onClick={(e) => {
+															e.stopPropagation();
+															deleteChat(chat.id);
+														}}
+														className="text-red-500 hover:text-red-700 text-xs sm:text-sm flex-shrink-0"
+														aria-label="Delete chat">
+														🗑️
+													</button>
+												</div>
+												<p className="text-xs text-slate-500 mt-1">
+													{new Date(chat.timestamp.toDate()).toLocaleDateString()}
 												</p>
-												<button
-													onClick={(e) => {
-														e.stopPropagation();
-														deleteChat(chat.id);
-													}}
-													className='text-red-500 hover:text-red-700 text-xs'>
-													🗑️
-												</button>
-											</div>
-											<p className='text-xs text-slate-500 mt-1'>
-												{new Date(chat.timestamp.toDate()).toLocaleDateString()}
-											</p>
-										</motion.div>
-									))}
+											</motion.div>
+										))
+									)}
 								</div>
 							</div>
 						</motion.div>
@@ -362,50 +373,42 @@ function ChatBox({ user, lang, setLang, isFullScreen, setIsFullScreen }) {
 			<motion.div
 				className={`flex flex-col w-full h-full bg-white border border-r-0 border-slate-200 overflow-hidden transition-all duration-500`}>
 				{/* Chat Header */}
-				<div className='bg-gradient-to-r from-indigo-500 to-purple-500 p-4 text-white'>
-					<div className='flex items-center justify-between'>
-						<div className='flex items-center space-x-3'>
+				<div className="bg-gradient-to-r from-indigo-500 to-purple-500 p-3 sm:p-4 text-white">
+					<div className="flex items-center justify-between gap-2">
+						<div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
 							<motion.div
 								animate={{ rotate: 360 }}
 								transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-								className='w-8 h-8 bg-white/20 rounded-full flex items-center justify-center'>
-								🤖
+								className="w-7 h-7 sm:w-8 sm:h-8 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+								<span className="text-sm sm:text-base">🤖</span>
 							</motion.div>
-							<div>
-								<h3 className='font-bold text-lg'>SomaAI Assistant</h3>
-								<p className='text-sm text-indigo-100'>Always here to help</p>
+							<div className="min-w-0 flex-1">
+								<h3 className="font-bold text-sm sm:text-base md:text-lg truncate">SomaAI Assistant</h3>
+								<p className="text-xs sm:text-sm text-indigo-100 hidden sm:block">Always here to help</p>
 							</div>
 						</div>
-						<div className='flex items-center space-x-2'>
+						<div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
 							{/* History Sidebar Toggle - only show in full screen */}
-							<motion.button
-								whileHover={{ scale: 1.1 }}
-								whileTap={{ scale: 0.9 }}
-								onClick={() =>
-									isFullScreen
-										? setShowHistorySidebar(!showHistorySidebar)
-										: setIsFullScreen(true)
-								}
-								className='p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors'
-								title={showHistorySidebar ? "Hide History" : "Show History"}>
-								📚
-							</motion.button>
+							{isFullScreen && (
+								<motion.button
+									whileHover={{ scale: 1.1 }}
+									whileTap={{ scale: 0.9 }}
+									onClick={() => setShowHistorySidebar(!showHistorySidebar)}
+									className="p-1.5 sm:p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
+									title={showHistorySidebar ? "Hide History" : "Show History"}
+									aria-label={showHistorySidebar ? "Hide History" : "Show History"}>
+									<span className="text-sm sm:text-base">📚</span>
+								</motion.button>
+							)}
 							{/* Full Screen Button */}
 							<motion.button
 								whileHover={{ scale: 1.1 }}
 								whileTap={{ scale: 0.9 }}
 								onClick={() => setIsFullScreen(!isFullScreen)}
-								className='p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors'
-								title={isFullScreen ? "Exit Full Screen" : "Full Screen"}>
-								{isFullScreen ? "⛶" : "⛶"}
-							</motion.button>
-							{/* Settings Button */}
-							<motion.button
-								whileHover={{ scale: 1.1 }}
-								whileTap={{ scale: 0.9 }}
-								onClick={() => setShowSidebar(!showSidebar)}
-								className='p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors'>
-								⚙️
+								className="p-1.5 sm:p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
+								title={isFullScreen ? "Exit Full Screen" : "Full Screen"}
+								aria-label={isFullScreen ? "Exit Full Screen" : "Full Screen"}>
+								<span className="text-sm sm:text-base">{isFullScreen ? "⛶" : "⛶"}</span>
 							</motion.button>
 						</div>
 					</div>
@@ -414,7 +417,7 @@ function ChatBox({ user, lang, setLang, isFullScreen, setIsFullScreen }) {
 				{/* Messages Area */}
 				<div
 					ref={listRef}
-					className='flex-1 flex-shrink-0 overflow-y-auto p-4 space-y-4 bg-slate-50'>
+					className="flex-1 flex-shrink-0 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-slate-50">
 					{messages.map((message, index) => (
 						<Message key={index} role={message.role} text={message.text} />
 					))}
@@ -422,31 +425,33 @@ function ChatBox({ user, lang, setLang, isFullScreen, setIsFullScreen }) {
 				</div>
 
 				{/* Input Area - Fixed positioning */}
-				<div className='bg-white border-t border-slate-200 p-4'>
-					<form onSubmit={sendMessage} className='flex items-center space-x-3'>
+				<div className="bg-white border-t border-slate-200 p-3 sm:p-4">
+					<form onSubmit={sendMessage} className="flex items-end sm:items-center space-x-2 sm:space-x-3">
 						<input
-							type='text'
+							type="text"
 							value={input}
 							onChange={(e) => setInput(e.target.value)}
-							placeholder='Type your question...'
-							className='flex-1 px-4 py-3 border border-slate-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none text-sm'
+							placeholder="Type your question..."
+							className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 border border-slate-300 rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none text-sm sm:text-base"
 							style={{
 								maxHeight: isFullScreen ? "80px" : "48px",
-								minHeight: "48px",
+								minHeight: "44px",
 							}}
 						/>
 						<motion.button
-							type='submit'
+							type="submit"
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}
 							disabled={!input.trim() || aiTyping}
-							className='bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-6 py-3 rounded-2xl font-semibold shadow-lg hover:shadow-indigo-500/25 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 text-sm'>
-							<span>Send</span>
-							<motion.span
-								animate={{ x: [0, 5, 0] }}
-								transition={{
-									duration: 1,
-									repeat: Infinity,
+							className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-4 sm:px-6 py-2 sm:py-2.5 md:py-3 rounded-xl sm:rounded-2xl font-semibold shadow-lg hover:shadow-indigo-500/25 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm whitespace-nowrap">
+							<span className="hidden sm:inline">Send</span>
+							<span className="sm:hidden">➤</span>
+							{!aiTyping && (
+								<motion.span
+									animate={{ x: [0, 5, 0] }}
+									transition={{
+										duration: 1,
+										repeat: Infinity,
 								}}>
 								→
 							</motion.span>
@@ -458,38 +463,40 @@ function ChatBox({ user, lang, setLang, isFullScreen, setIsFullScreen }) {
 	);
 }
 
+/**
+ * Message Component
+ * Displays individual chat messages with proper styling for user and assistant
+ */
 function Message({ role, text }) {
 	const isUser = role === "user";
 	return (
-		<div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
+		<div className={`flex ${isUser ? "justify-end" : "justify-start"} w-full`}>
 			<motion.div
-				initial={{ opacity: 0, scale: 0.8 }}
-				animate={{ opacity: 1, scale: 1 }}
+				initial={{ opacity: 0, scale: 0.8, y: 10 }}
+				animate={{ opacity: 1, scale: 1, y: 0 }}
 				whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
 				transition={{ duration: 0.3 }}
-				className={`px-4 py-3 rounded-2xl max-w-[85%] text-base whitespace-pre-line break-words shadow-lg ${
+				className={`px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl max-w-[85%] sm:max-w-[75%] md:max-w-[70%] text-sm sm:text-base whitespace-pre-line break-words shadow-md sm:shadow-lg ${
 					isUser
 						? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white"
 						: "bg-white text-slate-800 border border-slate-200"
-				}`}
-				style={{
-					fontFamily: isUser ? undefined : "inherit",
-					marginLeft: isUser ? "auto" : 0,
-					marginRight: !isUser ? "auto" : 0,
-				}}>
+				}`}>
 				<ReactMarkdown
 					components={{
 						strong: ({ node, ...props }) => (
-							<strong style={{ fontWeight: 700 }} {...props} />
+							<strong className="font-bold" {...props} />
 						),
 						b: ({ node, ...props }) => (
-							<b style={{ fontWeight: 700 }} {...props} />
+							<b className="font-bold" {...props} />
 						),
 						p: ({ node, ...props }) => (
-							<p style={{ margin: "0.2em 0" }} {...props} />
+							<p className="my-1 sm:my-2" {...props} />
 						),
 						ul: ({ node, ...props }) => (
-							<ul style={{ margin: "0.3em 0 0.3em 1.5em" }} {...props} />
+							<ul className="my-2 sm:my-3 ml-4 sm:ml-6 list-disc" {...props} />
+						),
+						ol: ({ node, ...props }) => (
+							<ol className="my-2 sm:my-3 ml-4 sm:ml-6 list-decimal" {...props} />
 						),
 					}}>
 					{text}
@@ -499,32 +506,36 @@ function Message({ role, text }) {
 	);
 }
 
+/**
+ * Typing Indicator Component
+ * Shows animated dots when AI is generating a response
+ */
 function TypingIndicator() {
 	return (
 		<motion.div
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
-			className='flex justify-start'>
-			<div className='px-4 py-3 rounded-2xl bg-white border border-slate-200 text-slate-800 flex items-center space-x-2 text-sm shadow-lg'>
+			className="flex justify-start w-full">
+			<div className="px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl bg-white border border-slate-200 text-slate-800 flex items-center space-x-2 text-xs sm:text-sm shadow-md sm:shadow-lg">
 				<motion.span
 					animate={{ y: [0, -5, 0] }}
 					transition={{ duration: 0.6, repeat: Infinity, delay: 0 }}
-					className='text-indigo-500'>
+					className="text-indigo-500">
 					●
 				</motion.span>
 				<motion.span
 					animate={{ y: [0, -5, 0] }}
 					transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }}
-					className='text-purple-500'>
+					className="text-purple-500">
 					●
 				</motion.span>
 				<motion.span
 					animate={{ y: [0, -5, 0] }}
 					transition={{ duration: 0.6, repeat: Infinity, delay: 0.4 }}
-					className='text-pink-500'>
+					className="text-pink-500">
 					●
 				</motion.span>
-				<span className='ml-2 text-slate-600'>AI is typing...</span>
+				<span className="ml-1 sm:ml-2 text-slate-600">AI is typing...</span>
 			</div>
 		</motion.div>
 	);
