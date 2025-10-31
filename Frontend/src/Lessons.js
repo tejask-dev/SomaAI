@@ -4,6 +4,7 @@ import { db } from "./firebase";
 import { getDocs, collection } from "firebase/firestore";
 import Navbar from "./Navbar";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 // Sample topics for filtering (you can modify these based on your actual lesson topics)
 const TOPICS = [
@@ -18,6 +19,7 @@ const TOPICS = [
 ];
 
 export default function Lessons() {
+	const navigate = useNavigate();
 	const [search, setSearch] = useState("");
 	const [lessons, setLessons] = useState([]);
 	const [selectedTopic, setSelectedTopic] = useState("All Topics");
@@ -257,6 +259,13 @@ export default function Lessons() {
 						<motion.button
 							whileHover={{ scale: 1.05, y: -2 }}
 							whileTap={{ scale: 0.95 }}
+							onClick={() => {
+								if (lessons.length > 0) {
+									// Sort lessons by ID to ensure lesson 1 is first
+									const sortedLessons = [...lessons].sort((a, b) => Number(a.id) - Number(b.id));
+									navigate(`/lesson/${sortedLessons[0].id}`);
+								}
+							}}
 							className="bg-white text-indigo-600 px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-300">
 							Start Learning Now
 						</motion.button>
