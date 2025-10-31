@@ -452,9 +452,10 @@ function ChatBox({ user, lang, setLang, isFullScreen, setIsFullScreen }) {
 									transition={{
 										duration: 1,
 										repeat: Infinity,
-								}}>
-								→
-							</motion.span>
+									}}>
+									→
+								</motion.span>
+							)}
 						</motion.button>
 					</form>
 				</div>
