@@ -1,50 +1,232 @@
-def check_safety(message, lang):
-    # Basic rules: block explicit adult content, hate, slurs, violence, and other dangerous or illegal topics
-    blocked_keywords = [
-         "nsfw",
-        "hardcore", "xxx", "child porn", "child abuse", "pedo", "pedophile",
-        "incest", "molest", "molestation", "bestiality", "zoophilia", "beastiality",
-        "kill", "suicide", "self-harm", "self harm", "cutting", "overdose", "die", "death",
-        "murder", "execute", "hang", "asphyxiate", "asphyxiation", "choke", "slit", "stab", "shoot",
-        "gun", "massacre", "terrorist", "terrorism", "bomb", "explosive", "attack",
-        "hate", "racist", "racism", "homophobia", "homophobic", "transphobia", "transphobic",
-        "slur", "slurs", "nigger", "faggot", "retard", "cunt", "bitch", "whore", "slut", "sodomy", "sodomize",
-        "genital mutilation", "fgm", "circumcision video", "torture", "snuff", "necrophilia",
-        "necrophile", "zoosadism", "scat", "coprophilia", "bestiality", "zoophilia",
-        "abuse", "abusive","abduct", "abduction", "kidnap", "kidnapping",
-        "enslave", "slavery", "slave", "traffick", "trafficking", "human trafficking",
-        "exploit", "exploitation", "groom", "grooming", "solicit", "solicitation", "prostitute",
-        "prostitution", "escort", "pimp", "sex trafficking", "drug", "drugs", "overdose"
-    ]
-    for kw in blocked_keywords:
-        if kw in message.lower():
-            return ["blocked"]
-    return []
+"""
+Advanced Safety and Intent Classification System
+Enhanced with context-aware filtering and sophisticated intent detection
+"""
+import re
+from typing import List, Tuple
+from utils.logger import logger
 
-def classify_intent(message, lang):
-    # Simple keyword-based; swap for ML later
-    mapping = {
-        "hiv": "HIV_prevention",
-        "contracept": "contraception",
-        "consent": "consent",
-        "rape": "assault_support",
-        "emergency": "emergency"
-    }
-    for k, v in mapping.items():
-        if k in message.lower():
-            return v
+# Context-aware blocked keywords (more specific to avoid false positives)
+CRITICAL_BLOCKED_PATTERNS = [
+    # Illegal/harmful content
+    r'\b(child\s*(porn|abuse|exploitation|sexual))\b',
+    r'\b(pedo|pedophile|ephebophile)\b',
+    r'\b(incest|bestiality|zoophilia|beastiality)\b',
+    r'\b(snuff|necrophilia|zoosadism)\b',
+    # Violence/threats
+    r'\b(kill\s+(yourself|myself|himself|herself|themselves|you|me|him|her|them))\b',
+    r'\b(commit\s+suicide|end\s+my\s+life|end\s+your\s+life)\b',
+    r'\b(murder|execute|torture|bomb|terrorist|terrorism)\b',
+    # Hate speech patterns
+    r'\b(nigger|faggot|retard|cunt|whore|slut)\b',
+    # Human trafficking
+    r'\b(human\s+trafficking|sex\s+trafficking|grooming\s+for\s+sex)\b',
+]
+
+# Warning patterns (need review but not blocked)
+WARNING_PATTERNS = [
+    r'\b(drug|drugs|overdose|narcotic)\b',
+    r'\b(self-harm|self\s+harm|cutting|burning)\b',
+]
+
+def check_safety(message: str, lang: str, context: List[str] = None) -> List[str]:
+    """
+    Advanced safety check with context awareness
+    Returns list of safety flags
+    """
+    message_lower = message.lower().strip()
+    flags = []
+    
+    # Check critical blocked patterns
+    for pattern in CRITICAL_BLOCKED_PATTERNS:
+        if re.search(pattern, message_lower, re.IGNORECASE):
+            logger.warning("Blocked content detected", pattern=pattern[:50], 
+                          message_preview=message[:50])
+            return ["blocked"]
+    
+    # Check warning patterns
+    warning_count = sum(1 for pattern in WARNING_PATTERNS 
+                       if re.search(pattern, message_lower, re.IGNORECASE))
+    
+    if warning_count > 0:
+        flags.append("needs_review")
+    
+    # Context-aware checking
+    if context:
+        # Check if message is part of a harmful pattern across context
+        recent_messages = " ".join(context[-3:]).lower()
+        if any(pattern in recent_messages for pattern in CRITICAL_BLOCKED_PATTERNS):
+            flags.append("blocked_context")
+    
+    # Check for excessive repetition (potential spam/abuse)
+    words = message_lower.split()
+    if len(words) > 0:
+        word_freq = {}
+        for word in words:
+            word_freq[word] = word_freq.get(word, 0) + 1
+        max_repetition = max(word_freq.values())
+        if max_repetition > len(words) * 0.3:  # More than 30% repetition
+            flags.append("low_confidence")
+    
+    return flags
+
+
+def classify_intent(message: str, lang: str) -> str:
+    """
+    Advanced intent classification with multiple patterns and priority
+    """
+    message_lower = message.lower()
+    
+    # Priority-based intent mapping (more specific first)
+    intent_patterns = [
+        # Emergency/Crisis (highest priority)
+        (r'\b(emergency|urgent|crisis|help\s+now|immediate\s+help|911)\b', "emergency"),
+        (r'\b(call\s+(police|ambulance|doctor|help)|contact\s+authorities)\b', "emergency"),
+        
+        # Assault/Abuse Support
+        (r'\b(rape|raped|assault|abused|molested|violated|hurt\s+me)\b', "assault_support"),
+        (r'\b(sexual\s+(assault|abuse|violence|harassment))\b', "assault_support"),
+        (r'\b(was\s+(raped|assaulted|abused|violated))\b', "assault_support"),
+        (r'\b(forced\s+(me|to|into)|against\s+my\s+will)\b', "assault_support"),
+        
+        # Consent
+        (r'\b(consent|permission|agree|say\s+no|say\s+yes)\b', "consent"),
+        (r'\b(can\s+I\s+say\s+no|do\s+I\s+have\s+to|forced)\b', "consent"),
+        (r'\b(boundaries|personal\s+boundaries|set\s+boundaries)\b', "consent"),
+        
+        # HIV Prevention
+        (r'\b(hiv|aids|h\.i\.v\.|human\s+immunodeficiency)\b', "HIV_prevention"),
+        (r'\b(prevent\s+hiv|hiv\s+prevention|protect\s+from\s+hiv)\b', "HIV_prevention"),
+        (r'\b(hiv\s+test|get\s+tested|hiv\s+transmission)\b', "HIV_prevention"),
+        
+        # Contraception
+        (r'\b(contracept|birth\s+control|condom|pregnancy\s+prevention)\b', "contraception"),
+        (r'\b(pill|iud|implant|injection|patch|ring)\b', "contraception"),
+        (r'\b(prevent\s+pregnancy|not\s+get\s+pregnant|avoid\s+pregnancy)\b', "contraception"),
+        
+        # Pregnancy
+        (r'\b(pregnant|pregnancy|expecting|baby|test\s+positive)\b', "pregnancy"),
+        (r'\b(missed\s+period|late\s+period|am\s+I\s+pregnant)\b', "pregnancy"),
+        
+        # STIs
+        (r'\b(sti|std|sexually\s+transmitted|chlamydia|gonorrhea|herpes)\b', "STI_info"),
+        (r'\b(get\s+tested|sti\s+test|std\s+test|screening)\b', "STI_info"),
+        
+        # Mental Health
+        (r'\b(depressed|depression|anxious|anxiety|suicidal|want\s+to\s+die)\b', "mental_health"),
+        (r'\b(self-harm|cutting|hurting\s+myself|feel\s+hopeless)\b', "mental_health"),
+        (r'\b(counselor|therapy|therapist|need\s+help)\b', "mental_health"),
+        
+        # Puberty/Body Changes
+        (r'\b(puberty|period|menstruation|menstrual|menarche)\b', "puberty"),
+        (r'\b(body\s+changes|growing|development|voice\s+change)\b', "puberty"),
+        
+        # Relationships
+        (r'\b(relationship|dating|boyfriend|girlfriend|breakup)\b', "relationships"),
+        (r'\b(like\s+someone|crush|attraction|love)\b', "relationships"),
+        
+        # LGBTQ+
+        (r'\b(gay|lesbian|bisexual|transgender|lgbtq|lgb|queer)\b', "LGBTQ"),
+        (r'\b(coming\s+out|sexual\s+orientation|gender\s+identity)\b', "LGBTQ"),
+    ]
+    
+    # Check patterns in order (first match wins)
+    for pattern, intent in intent_patterns:
+        if re.search(pattern, message_lower, re.IGNORECASE):
+            logger.info("Intent classified", intent=intent, message_preview=message[:50])
+            return intent
+    
+    # Default to basic_info
     return "basic_info"
 
-def localized_system_prompt(lang, reading_level):
-    prompts = {
-        "en": f"You are SomaAI, a friendly, culturally respectful sexual-health educator for teens. Respond in English. Reading Level: {reading_level}.",
-        "fr": f"Vous êtes SomaAI, un éducateur chaleureux et respectueux pour la santé sexuelle des adolescents. Répondez en français. Niveau de lecture : {reading_level}.",
-        "pt": f"Você é o SomaAI, um educador amigável e respeitoso para saúde sexual de adolescentes. Responda em português. Nível de leitura: {reading_level}.",
-        "es": f"Eres SomaAI, un educador amigable y respetuoso sobre salud sexual para adolescentes. Responde en español. Nivel de lectura: {reading_level}.",
-        "sw": f"Wewe ni SomaAI, mwelekezaji rafiki na mwenye heshima kuhusu afya ya ngono kwa vijana. Jibu kwa Kiswahili. Kiwango cha usomaji: {reading_level}.",
-        "hi": f"आप SomaAI हैं, एक मित्रवत, सांस्कृतिक रूप से संवेदनशील यौन स्वास्थ्य शिक्षक। हिंदी में उत्तर दें। पठन स्तर: {reading_level}।"
+def localized_system_prompt(lang: str, reading_level: str) -> str:
+    """
+    Generate enhanced, culturally sensitive system prompts
+    """
+    base_prompts = {
+        "en": """You are SomaAI, a friendly, knowledgeable, and culturally respectful sexual-health educator designed specifically for adolescents and young adults.
+
+Your role:
+- Provide accurate, evidence-based information about sexual health, puberty, relationships, and related topics
+- Be supportive, non-judgmental, and compassionate
+- Use age-appropriate language suitable for teenagers
+- Respect cultural and religious diversity
+- Encourage healthy decision-making and consent
+- Direct users to professional help when needed (for emergencies, abuse, mental health crises)
+
+Guidelines:
+- Reading Level: {reading_level} (use simpler words and shorter sentences for "simple", more detailed explanations for "detailed")
+- Always emphasize consent, safety, and respect
+- Acknowledge when you don't know something and suggest reliable resources
+- If asked about emergencies, abuse, or mental health crises, provide appropriate support resources
+- Never provide medical diagnosis or replace professional medical advice
+- Be culturally sensitive and inclusive of all backgrounds
+
+Respond naturally and conversationally in English.""",
+
+        "fr": """Vous êtes SomaAI, un éducateur chaleureux, compétent et respectueux de la culture pour la santé sexuelle, conçu spécifiquement pour les adolescents et les jeunes adultes.
+
+Votre rôle:
+- Fournir des informations précises et fondées sur des preuves concernant la santé sexuelle, la puberté, les relations, etc.
+- Être bienveillant, sans jugement et compatissant
+- Utiliser un langage adapté à l'âge des adolescents
+- Respecter la diversité culturelle et religieuse
+- Encourager la prise de décisions saines et le consentement
+- Orienter les utilisateurs vers une aide professionnelle si nécessaire
+
+Niveau de lecture: {reading_level}. Répondez naturellement en français.""",
+
+        "pt": """Você é o SomaAI, um educador amigável, competente e culturalmente respeitoso sobre saúde sexual, projetado especificamente para adolescentes e jovens adultos.
+
+Seu papel:
+- Fornecer informações precisas e baseadas em evidências sobre saúde sexual, puberdade, relacionamentos, etc.
+- Ser solidário, sem julgamento e compassivo
+- Usar linguagem apropriada para a idade de adolescentes
+- Respeitar a diversidade cultural e religiosa
+- Incentivar tomadas de decisão saudáveis e consentimento
+- Direcionar usuários para ajuda profissional quando necessário
+
+Nível de leitura: {reading_level}. Responda naturalmente em português.""",
+
+        "es": """Eres SomaAI, un educador amigable, conocedor y culturalmente respetuoso sobre salud sexual, diseñado específicamente para adolescentes y adultos jóvenes.
+
+Tu papel:
+- Proporcionar información precisa y basada en evidencia sobre salud sexual, pubertad, relaciones, etc.
+- Ser solidario, sin prejuicios y compasivo
+- Usar un lenguaje apropiado para la edad de los adolescentes
+- Respetar la diversidad cultural y religiosa
+- Fomentar la toma de decisiones saludables y el consentimiento
+- Dirigir a los usuarios a ayuda profesional cuando sea necesario
+
+Nivel de lectura: {reading_level}. Responde naturalmente en español.""",
+
+        "sw": """Wewe ni SomaAI, mwelekezaji rafiki, mwenye maarifa, na mwenye heshima ya kitamaduni kuhusu afya ya ngono, iliyoundwa mahsusi kwa vijana na watu wachanga.
+
+Jukumu lako:
+- Toa habari sahihi na zenye msingi wa ushahidi kuhusu afya ya ngono, ujauzito, mahusiano, nk.
+- Kuwa msaidizi, bila kuhukumu, na mwenye huruma
+- Tumia lugha inayofaa kwa umri wa vijana
+- Hebu utuunge na utofauti wa kitamaduni na kidini
+- Kuhamasisha uamuzi wenye afya na ridhaa
+- Elekeza watumiaji kwa msaada wa kitaalam wakati inahitajika
+
+Kiwango cha usomaji: {reading_level}. Jibu kwa asili kwa Kiswahili.""",
+
+        "hi": """आप SomaAI हैं, एक मित्रवत, जानकार, और सांस्कृतिक रूप से सम्मानजनक यौन स्वास्थ्य शिक्षक, विशेष रूप से किशोरों और युवा वयस्कों के लिए डिज़ाइन किया गया।
+
+आपकी भूमिका:
+- यौन स्वास्थ्य, यौवन, रिश्तों आदि के बारे में सटीक, साक्ष्य-आधारित जानकारी प्रदान करें
+- सहायक, गैर-न्यायिक और करुणामय बनें
+- किशोरों की आयु के अनुकूल भाषा का उपयोग करें
+- सांस्कृतिक और धार्मिक विविधता का सम्मान करें
+- स्वस्थ निर्णय लेने और सहमति को प्रोत्साहित करें
+- आवश्यकता पड़ने पर उपयोगकर्ताओं को पेशेवर सहायता के लिए निर्देशित करें
+
+पठन स्तर: {reading_level}। हिंदी में स्वाभाविक रूप से उत्तर दें।"""
     }
-    return prompts.get(lang, prompts["en"])
+    
+    prompt_template = base_prompts.get(lang, base_prompts["en"])
+    return prompt_template.format(reading_level=reading_level)
 
 # HEALTH_ALLOWLIST unchanged, as provided above
 HEALTH_ALLOWLIST = [
