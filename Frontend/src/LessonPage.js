@@ -27,7 +27,7 @@ function LessonPage() {
     const { user } = useAuth();
     const navigate = useNavigate();
     const discoverLessonCount = 4;
-    const COMPLETION_TIME = 7 * 60; // 7 minutes minimum for completion
+    const COMPLETION_TIME = 3 * 60; // 3 minutes minimum for completion (videos may be longer, but reading is short)
 
     useEffect(() => {
         async function fetchData() {
@@ -129,9 +129,74 @@ function LessonPage() {
         }
     }
 
-    // Rate lesson (dummy logic, you can expand for user/lesson rating storage)
-    function handleRateLesson() {
-        window.alert("Thank you for rating this lesson!");
+    // Rate lesson - saves rating to Firebase
+    async function handleRateLesson() {
+        if (!user) {
+            window.alert("Please sign in to rate lessons.");
+            return;
+        }
+
+        const rating = window.prompt("Rate this lesson from 1-5 (1 = Poor, 5 = Excellent):");
+        if (!rating) return;
+
+        const ratingNum = parseInt(rating);
+        if (isNaN(ratingNum) || ratingNum < 1 || ratingNum > 5) {
+            window.alert("Please enter a valid rating between 1 and 5.");
+            return;
+        }
+
+        try {
+            const uid = user.uid;
+            const lessonRatingRef = doc(db, "lessonRatings", `${uid}_${id}`);
+            const ratingSnap = await getDoc(lessonRatingRef);
+
+            const ratingData = {
+                userId: uid,
+                lessonId: id,
+                rating: ratingNum,
+                timestamp: new Date(),
+            };
+
+            if (ratingSnap.exists()) {
+                // Update existing rating
+                await updateDoc(lessonRatingRef, ratingData);
+                window.alert(`Thank you for updating your rating! You rated this lesson ${ratingNum} out of 5.`);
+            } else {
+                // Create new rating
+                await setDoc(lessonRatingRef, ratingData);
+                window.alert(`Thank you for rating this lesson! You rated it ${ratingNum} out of 5.`);
+            }
+
+            // Also update the lesson's average rating
+            const lessonRef = doc(db, "Lessons", id);
+            const lessonSnap = await getDoc(lessonRef);
+            if (lessonSnap.exists()) {
+                const lessonData = lessonSnap.data();
+                const currentRatings = lessonData.ratings || [];
+                
+                // Update or add user's rating
+                const userRatingIndex = currentRatings.findIndex(r => r.userId === uid);
+                const newRating = { userId: uid, rating: ratingNum, timestamp: new Date() };
+                
+                if (userRatingIndex >= 0) {
+                    currentRatings[userRatingIndex] = newRating;
+                } else {
+                    currentRatings.push(newRating);
+                }
+
+                // Calculate average rating
+                const avgRating = currentRatings.reduce((sum, r) => sum + r.rating, 0) / currentRatings.length;
+                
+                await updateDoc(lessonRef, {
+                    ratings: currentRatings,
+                    averageRating: Math.round(avgRating * 10) / 10, // Round to 1 decimal
+                    totalRatings: currentRatings.length
+                });
+            }
+        } catch (error) {
+            console.error("Error saving rating:", error);
+            window.alert("Error saving your rating. Please try again.");
+        }
     }
 
     // Save progress (dummy logic)
@@ -443,7 +508,7 @@ function LessonPage() {
                                 <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
                                     <div className="flex justify-between">
                                         <span className="text-slate-600">Duration:</span>
-                                        <span className="font-semibold">~7-10 min</span>
+                                        <span className="font-semibold">~3-5 min</span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-slate-600">Difficulty:</span>
