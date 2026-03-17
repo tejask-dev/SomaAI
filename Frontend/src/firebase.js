@@ -2,14 +2,20 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
+// All values are read from environment variables (REACT_APP_ prefix required by CRA).
+// Copy .env.example to .env.local and fill in your project values.
+// These variables are bundled into the frontend build — never put server-only
+// secrets here. Firebase web API keys are project identifiers; security is
+// enforced by Firebase Security Rules and authorized domain restrictions.
 const firebaseConfig = {
-  apiKey: "AIzaSyDMm9MpJW6yV1xJe_gwNssEQdrKI7hmemQ",
-  authDomain: "somaai-97af8.firebaseapp.com",
-  projectId: "somaai-97af8",
-  storageBucket: "somaai-97af8.firebasestorage.app.appspot.com",
-  messagingSenderId: "202998071118",
-  appId: "1:202998071118:web:622944b33f3a0cb3eb681f"
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
+
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);

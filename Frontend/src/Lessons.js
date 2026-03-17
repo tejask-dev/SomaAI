@@ -6,272 +6,223 @@ import Navbar from "./Navbar";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
-// Sample topics for filtering (you can modify these based on your actual lesson topics)
 const TOPICS = [
-	"All Topics",
-	"Health & Safety",
-	"Personal Development",
-	"Relationships",
-	"Mental Health",
-	"Physical Health",
-	"Social Skills",
-	"Life Skills",
+  "All Topics",
+  "Health & Safety",
+  "Relationships",
+  "Mental Health",
+  "Physical Health",
+  "Life Skills",
 ];
 
+function SearchIcon({ className = "w-4 h-4" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8" />
+      <path d="M21 21l-4.35-4.35" />
+    </svg>
+  );
+}
+
+function SpinnerIcon({ className = "w-8 h-8" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+      <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeOpacity={0.2} />
+      <path d="M3 12a9 9 0 019-9" className="animate-spin origin-center" style={{ animationDuration: "0.8s" }} />
+    </svg>
+  );
+}
+
 export default function Lessons() {
-	const navigate = useNavigate();
-	const [search, setSearch] = useState("");
-	const [lessons, setLessons] = useState([]);
-	const [selectedTopic, setSelectedTopic] = useState("All Topics");
-	const [isLoading, setIsLoading] = useState(true);
-	const [filteredLessons, setFilteredLessons] = useState([]);
+  const navigate = useNavigate();
+  const [search, setSearch] = useState("");
+  const [lessons, setLessons] = useState([]);
+  const [selectedTopic, setSelectedTopic] = useState("All Topics");
+  const [isLoading, setIsLoading] = useState(true);
+  const [filteredLessons, setFilteredLessons] = useState([]);
 
-	useEffect(() => {
-		async function fetchData() {
-			try {
-				const docs = await getDocs(collection(db, "Lessons"));
-				const lessonsWithId = docs.docs.map((d) => ({
-					id: d.id,
-					...d.data(),
-				}));
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const docs = await getDocs(collection(db, "Lessons"));
+        const arr = docs.docs
+          .map((d) => ({ id: d.id, ...d.data() }))
+          .sort((a, b) => Number(a.id) - Number(b.id));
+        setLessons(arr);
+      } catch (err) {
+        console.error("Error fetching lessons:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
 
-				lessonsWithId.sort((a, b) => Number(a.id) - Number(b.id));
-				setLessons(lessonsWithId);
-				setIsLoading(false);
-			} catch (error) {
-				console.error("Error fetching lessons:", error);
-				setIsLoading(false);
-			}
-		}
-		fetchData();
-	}, []);
+  useEffect(() => {
+    const term = search.toLowerCase();
+    setFilteredLessons(
+      lessons.filter((l) => {
+        const name = l.name?.toLowerCase() ?? "";
+        const content = l.content?.toLowerCase() ?? "";
+        return name.includes(term) || content.includes(term);
+      })
+    );
+  }, [lessons, search]);
 
-	useEffect(() => {
-		let filtered = lessons.filter((l) => {
-			const term = search.toLowerCase();
-			const name = l.name?.toLowerCase() || "";
-			const content = l.content?.toLowerCase() || "";
-			const matchesSearch = name.includes(term) || content.includes(term);
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Navbar />
+        <div className="flex items-center justify-center h-[calc(100vh-4rem)] pt-16">
+          <div className="flex flex-col items-center gap-3">
+            <svg className="w-8 h-8 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round">
+              <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeOpacity={0.15} />
+              <path d="M3 12a9 9 0 019-9" style={{ animation: "spin 0.75s linear infinite" }} />
+            </svg>
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            <p className="text-sm text-slate-400">Loading lessons…</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-			if (selectedTopic === "All Topics") {
-				return matchesSearch;
-			}
+  return (
+    <div className="min-h-screen bg-white">
+      <Navbar />
 
-			// You can add topic matching logic here based on your lesson structure
-			// For now, we'll just filter by search term
-			return matchesSearch;
-		});
+      {/* Page header */}
+      <section className="pt-24 pb-10 sm:pt-28 sm:pb-12 border-b border-slate-100 bg-slate-50">
+        <div className="section-container">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="max-w-2xl"
+          >
+            <p className="text-xs font-semibold tracking-widest uppercase text-emerald-600 mb-3">
+              Lessons
+            </p>
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 mb-3">
+              Health education, structured.
+            </h1>
+            <p className="text-slate-500 text-base leading-relaxed">
+              Browse our curated library of lessons covering sexual health,
+              relationships, mental wellbeing, and more.
+            </p>
+          </motion.div>
 
-		setFilteredLessons(filtered);
-	}, [lessons, search, selectedTopic]);
+          {/* Search + filter */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            className="mt-7 space-y-4"
+          >
+            {/* Search */}
+            <div className="relative max-w-md">
+              <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              <input
+                type="search"
+                placeholder="Search lessons…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all shadow-sm"
+              />
+            </div>
 
-	const handleTopicChange = (topic) => {
-		setSelectedTopic(topic);
-		setSearch(""); // Clear search when changing topics
-	};
+            {/* Topic chips */}
+            <div className="flex flex-wrap gap-2">
+              {TOPICS.map((topic) => (
+                <button
+                  key={topic}
+                  onClick={() => setSelectedTopic(topic)}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all duration-200 border ${
+                    selectedTopic === topic
+                      ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
+                      : "bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:text-slate-900"
+                  }`}
+                >
+                  {topic}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
 
-	if (isLoading) {
-		return (
-			<div className='min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50'>
-				<Navbar />
-				<div className='flex items-center justify-center h-[calc(100vh-80px)] pt-20'>
-					<motion.div
-						animate={{ rotate: 360 }}
-						transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-						className='w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full'
-					/>
-				</div>
-			</div>
-		);
-	}
+      {/* Lessons grid */}
+      <section className="py-10 sm:py-14">
+        <div className="section-container">
+          {/* Count */}
+          <p className="text-sm text-slate-400 mb-6">
+            {filteredLessons.length} lesson{filteredLessons.length !== 1 ? "s" : ""}
+          </p>
 
-	return (
-		<div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
-			<Navbar />
+          <AnimatePresence mode="wait">
+            {filteredLessons.length > 0 ? (
+              <motion.div
+                key={`${selectedTopic}-${search}`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
+              >
+                {filteredLessons.map((lesson, index) => (
+                  <LessonCard
+                    key={lesson.id}
+                    id={lesson.id}
+                    name={lesson.name}
+                    index={index}
+                    content={
+                      lesson.content.length > 120
+                        ? lesson.content.substring(0, 120).trimEnd() + "…"
+                        : lesson.content
+                    }
+                  />
+                ))}
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.97 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex flex-col items-center justify-center py-24 text-center"
+              >
+                <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-5">
+                  <SearchIcon className="w-6 h-6 text-slate-400" />
+                </div>
+                <h3 className="font-semibold text-slate-900 mb-1.5">No lessons found</h3>
+                <p className="text-sm text-slate-400 max-w-xs">
+                  Try adjusting your search or selecting a different topic.
+                </p>
+                {search && (
+                  <button
+                    onClick={() => setSearch("")}
+                    className="mt-5 btn-secondary text-sm"
+                  >
+                    Clear search
+                  </button>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </section>
 
-			{/* Hero Section */}
-			<motion.section
-				initial={{ opacity: 0, y: 30 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.8 }}
-				className="relative overflow-hidden py-12 sm:py-16 md:py-20 px-4 pt-24 sm:pt-28 md:pt-32">
-				<div className="max-w-7xl mx-auto text-center">
-					<motion.div
-						initial={{ scale: 0.8 }}
-						animate={{ scale: 1 }}
-						transition={{ duration: 0.6, delay: 0.2 }}
-						className="mb-6 sm:mb-8">
-						<h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4 sm:mb-6 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent px-2">
-							Discover & Learn
-						</h1>
-						<p className="text-base sm:text-lg md:text-xl lg:text-2xl text-slate-600 max-w-3xl mx-auto leading-relaxed px-2">
-							Explore our comprehensive collection of lessons designed to
-							empower and educate
-						</p>
-					</motion.div>
-
-					{/* Search and Filter Section */}
-					<motion.div
-						initial={{ opacity: 0, y: 20 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ duration: 0.6, delay: 0.4 }}
-						className="max-w-4xl mx-auto">
-						{/* Search Bar */}
-						<div className="relative mb-4 sm:mb-6 md:mb-8">
-							<motion.input
-								whileFocus={{ scale: 1.01 }}
-								type="text"
-								placeholder="Search lessons..."
-								value={search}
-								onChange={(e) => setSearch(e.target.value)}
-								className="w-full px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base md:text-lg border-2 border-slate-200 rounded-xl sm:rounded-2xl shadow-lg focus:ring-2 sm:focus:ring-4 focus:ring-indigo-300 focus:border-indigo-400 focus:outline-none transition-all duration-300 bg-white/90 backdrop-blur-sm"
-							/>
-							<div className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 text-slate-400 text-lg sm:text-xl">
-								🔍
-							</div>
-						</div>
-
-						{/* Topic Filter Buttons */}
-						<div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-6 sm:mb-8 px-2">
-							{TOPICS.map((topic, index) => (
-								<motion.div
-									key={topic}
-									initial={{ opacity: 0, scale: 0.8 }}
-									animate={{ opacity: 1, scale: 1 }}
-									transition={{ duration: 0.4, delay: 0.1 * index + 0.5 }}>
-									<button
-										onClick={() => handleTopicChange(topic)}
-										className={`px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm md:text-base font-semibold transition-all duration-300 shadow-md hover:shadow-lg ${
-											selectedTopic === topic
-												? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-indigo-500/25"
-												: "bg-white/90 text-slate-600 hover:bg-white hover:shadow-xl backdrop-blur-sm"
-										}`}>
-										{topic}
-									</button>
-								</motion.div>
-							))}
-						</div>
-					</motion.div>
-				</div>
-
-				{/* Decorative Elements - Hidden on mobile for better performance */}
-				<motion.div
-					animate={{
-						y: [0, -20, 0],
-						rotate: [0, 5, 0],
-					}}
-					transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-					className="hidden md:block absolute top-20 left-10 w-20 h-20 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full opacity-20 blur-xl"
-				/>
-				<motion.div
-					animate={{
-						y: [0, 20, 0],
-						rotate: [0, -5, 0],
-					}}
-					transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-					className="hidden md:block absolute top-40 right-20 w-32 h-32 bg-gradient-to-r from-pink-400 to-purple-400 rounded-full opacity-20 blur-xl"
-				/>
-			</motion.section>
-
-			{/* Lessons Grid Section */}
-			<motion.section
-				initial={{ opacity: 0 }}
-				animate={{ opacity: 1 }}
-				transition={{ duration: 0.8, delay: 0.6 }}
-				className="px-4 sm:px-6 lg:px-8 pb-12 sm:pb-16 md:pb-20">
-				<div className="max-w-7xl mx-auto">
-					{/* Results Count */}
-					<motion.div
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						transition={{ duration: 0.6, delay: 0.8 }}
-						className="text-center mb-6 sm:mb-8 md:mb-12">
-						<p className="text-sm sm:text-base md:text-lg text-slate-600">
-							{filteredLessons.length} lesson
-							{filteredLessons.length !== 1 ? "s" : ""} found
-							{selectedTopic !== "All Topics" && ` in ${selectedTopic}`}
-						</p>
-					</motion.div>
-
-					{/* Lessons Grid */}
-					<AnimatePresence mode="wait">
-						{filteredLessons.length > 0 ? (
-							<motion.div
-								key={`${selectedTopic}-${search}`}
-								initial={{ opacity: 0 }}
-								animate={{ opacity: 1 }}
-								exit={{ opacity: 0 }}
-								transition={{ duration: 0.3 }}
-								className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
-								{filteredLessons.map((lesson, index) => (
-									<LessonCard
-										key={lesson.id}
-										id={lesson.id}
-										name={lesson.name}
-										index={index}
-										content={
-											lesson.content.length > 100
-												? lesson.content
-														.slice(20, lesson.content.lastIndexOf(" ", 120))
-														.replace(/[.,?!]+$/g, "")
-														.replace(/\*\*/g, "") + "..."
-												: lesson.content
-										}
-									/>
-								))}
-							</motion.div>
-						) : (
-							<motion.div
-								initial={{ opacity: 0, scale: 0.8 }}
-								animate={{ opacity: 1, scale: 1 }}
-								transition={{ duration: 0.5 }}
-								className="text-center py-12 sm:py-16 md:py-20">
-								<div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 sm:mb-6 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-full flex items-center justify-center">
-									<span className="text-3xl sm:text-4xl">📚</span>
-								</div>
-								<h3 className="text-xl sm:text-2xl font-bold text-slate-700 mb-2 sm:mb-3 px-4">
-									No lessons found
-								</h3>
-								<p className="text-sm sm:text-base text-slate-500 max-w-md mx-auto px-4">
-									Try adjusting your search terms or topic filter to find what
-									you're looking for.
-								</p>
-							</motion.div>
-						)}
-					</AnimatePresence>
-				</div>
-			</motion.section>
-
-			{/* Call to Action */}
-			<motion.section
-				initial={{ opacity: 0, y: 30 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.8, delay: 1 }}
-				className="px-4 sm:px-6 lg:px-8 pb-12 sm:pb-16 md:pb-20">
-				<div className="max-w-4xl mx-auto text-center">
-					<div className="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-12 text-white shadow-2xl">
-						<h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">
-							Ready to Start Learning?
-						</h2>
-						<p className="text-base sm:text-lg md:text-xl text-indigo-100 mb-6 sm:mb-8 max-w-2xl mx-auto px-2">
-							Choose any lesson to begin your educational journey with SomaAI
-						</p>
-						<motion.button
-							whileHover={{ scale: 1.05, y: -2 }}
-							whileTap={{ scale: 0.95 }}
-							onClick={() => {
-								if (lessons.length > 0) {
-									// Sort lessons by ID to ensure lesson 1 is first
-									const sortedLessons = [...lessons].sort((a, b) => Number(a.id) - Number(b.id));
-									navigate(`/lesson/${sortedLessons[0].id}`);
-								}
-							}}
-							className="bg-white text-indigo-600 px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-300">
-							Start Learning Now
-						</motion.button>
-					</div>
-				</div>
-			</motion.section>
-		</div>
-	);
+      {/* CTA strip */}
+      {filteredLessons.length > 0 && (
+        <section className="border-t border-slate-100 bg-slate-50 py-12">
+          <div className="section-container text-center">
+            <p className="text-sm text-slate-500 mb-4">
+              Want a personalised deep-dive on any topic?
+            </p>
+            <a href="/chat" className="btn-primary inline-flex">
+              Ask SomaAI
+            </a>
+          </div>
+        </section>
+      )}
+    </div>
+  );
 }

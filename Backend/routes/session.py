@@ -1,6 +1,6 @@
 """
 Advanced Session Route
-Enhanced with validation, telemetry, and better error handling
+Enhanced with validation, IP-based rate limiting, telemetry, and error handling.
 """
 from flask import Blueprint, request, jsonify
 from config import ALLOWED_LANGS
@@ -8,17 +8,31 @@ from services.session_store import create_session
 from services.safety import localized_system_prompt
 from services.telemetry import record_session_created, record_request
 from utils.validators import validator
+from utils.rate_limiter import session_limiter
 from utils.logger import logger
 
 session_bp = Blueprint("session", __name__)
 
+
+def _get_client_ip() -> str:
+    forwarded = request.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.remote_addr or "unknown"
+
+
 @session_bp.route("/api/session", methods=["POST"])
 def new_session():
-    """
-    Create a new chat session with enhanced validation
-    """
+    """Create a new chat session with validation and IP-based rate limiting."""
     record_request()
-    
+
+    # Throttle session creation per IP to prevent session farming / bot abuse
+    ip = _get_client_ip()
+    allowed, _ = session_limiter.is_allowed(ip)
+    if not allowed:
+        logger.warning("Session creation rate limit exceeded", ip=ip)
+        return jsonify({"error": "Too many session requests. Please wait a moment."}), 429
+
     try:
         data = request.get_json() or {}
         lang = data.get("language")

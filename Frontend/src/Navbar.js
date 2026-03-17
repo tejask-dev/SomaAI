@@ -3,240 +3,191 @@ import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 
-/**
- * Navbar Page Link Component
- * Individual navigation link with active state styling
- */
-const Page = ({ name, path, onClick }) => {
-	const location = useLocation();
-	const isActive = location.pathname.startsWith(path);
-
-	return (
-		<motion.div
-			whileHover={{ y: -2 }}
-			whileTap={{ scale: 0.95 }}
-			onClick={onClick}>
-			<Link
-				to={path}
-				className={`px-3 py-2 rounded-lg transition-all duration-300 whitespace-nowrap ${
-					isActive
-						? "text-indigo-600 bg-indigo-50 font-semibold"
-						: "text-slate-600 hover:text-indigo-600 hover:bg-slate-50 font-medium"
-				}`}>
-				{name}
-			</Link>
-		</motion.div>
-	);
-};
-
-/**
- * Main Navbar Component
- * Responsive navigation bar with mobile menu
- */
 export default function Navbar() {
-	const { user, signout } = useAuth();
-	const navigate = useNavigate();
-	const [isScrolled, setIsScrolled] = useState(false);
-	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, signout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-	const pages = [
-		{ name: "📚 Lessons", path: "/lessons" },
-		{ name: "🤖 Chatbot", path: "/chat" },
-	];
+  const navLinks = [
+    { label: "Lessons", path: "/lessons" },
+    { label: "Chat", path: "/chat" },
+  ];
 
-	const showSignOut = user && typeof signout === "function";
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 16);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-	// Handle scroll effect for navbar styling
-	useEffect(() => {
-		const handleScroll = () => {
-			setIsScrolled(window.scrollY > 20);
-		};
-		window.addEventListener("scroll", handleScroll);
-		return () => window.removeEventListener("scroll", handleScroll);
-	}, []);
+  // Close mobile menu on route change
+  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
 
-	// Close mobile menu on route change
-	const location = useLocation();
-	useEffect(() => {
-		setIsMobileMenuOpen(false);
-	}, [location.pathname]);
+  // Prevent body scroll when mobile menu open
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileOpen]);
 
-	// Close mobile menu when clicking outside
-	useEffect(() => {
-		const handleClickOutside = (event) => {
-			if (
-				isMobileMenuOpen &&
-				!event.target.closest(".mobile-menu") &&
-				!event.target.closest(".mobile-menu-button")
-			) {
-				setIsMobileMenuOpen(false);
-			}
-		};
+  function handleAuth() {
+    if (user) {
+      signout();
+    } else {
+      navigate("/signin");
+    }
+    setMobileOpen(false);
+  }
 
-		if (isMobileMenuOpen) {
-			document.addEventListener("click", handleClickOutside);
-			document.body.style.overflow = "hidden";
-		} else {
-			document.body.style.overflow = "";
-		}
+  const isActive = (path) =>
+    path === "/" ? location.pathname === "/" : location.pathname.startsWith(path);
 
-		return () => {
-			document.removeEventListener("click", handleClickOutside);
-			document.body.style.overflow = "";
-		};
-	}, [isMobileMenuOpen]);
+  return (
+    <motion.header
+      initial={{ y: -64 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? "bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-sm"
+          : "bg-white/90 backdrop-blur-sm border-b border-transparent"
+      }`}
+    >
+      <div className="section-container">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link
+            to="/"
+            className="flex items-center gap-2.5 group focus:outline-none"
+          >
+            <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center shadow-sm group-hover:bg-emerald-700 transition-colors duration-200">
+              <svg viewBox="0 0 24 24" className="w-4.5 h-4.5" fill="none">
+                <path
+                  d="M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm0 4a3 3 0 110 6 3 3 0 010-6zm0 10a6.99 6.99 0 01-5.88-3.19C7.22 12.42 9.5 11.5 12 11.5c2.5 0 4.78.92 5.88 2.31A6.99 6.99 0 0112 17z"
+                  fill="white"
+                />
+              </svg>
+            </div>
+            <span className="font-bold text-lg tracking-tight text-slate-900 group-hover:text-slate-700 transition-colors duration-200">
+              SomaAI
+            </span>
+          </Link>
 
-	const handleAuthAction = () => {
-		if (showSignOut) {
-			signout();
-		} else {
-			navigate("/signin");
-		}
-		setIsMobileMenuOpen(false);
-	};
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-1">
+            {navLinks.map(({ label, path }) => (
+              <Link
+                key={path}
+                to={path}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  isActive(path)
+                    ? "text-emerald-700 bg-emerald-50"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                }`}
+              >
+                {label}
+              </Link>
+            ))}
+          </nav>
 
-	return (
-		<motion.header
-			initial={{ y: -100 }}
-			animate={{ y: 0 }}
-			transition={{ duration: 0.6, type: "spring" }}
-			className={`w-full fixed top-0 z-50 transition-all duration-300 ${
-				isScrolled
-					? "bg-white/95 backdrop-blur-md shadow-lg border-b border-slate-200"
-					: "bg-white/90 backdrop-blur-sm border-b border-slate-100"
-			}`}>
-			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-				<div className="flex justify-between items-center h-16 md:h-20">
-					{/* Logo */}
-					<motion.div
-						whileHover={{ scale: 1.05 }}
-						whileTap={{ scale: 0.95 }}>
-						<Link
-							to="/"
-							className="inline-flex items-center gap-2 sm:gap-3 focus:outline-none group">
-							<motion.div
-								whileHover={{ rotate: 360 }}
-								transition={{ duration: 0.6 }}
-								className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl sm:rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 grid place-items-center text-white font-black shadow-lg group-hover:shadow-indigo-500/25 transition-all duration-300">
-								S
-							</motion.div>
-							<motion.span
-								className="font-bold tracking-tight text-lg sm:text-xl bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent hidden sm:inline-block"
-								whileHover={{ scale: 1.02 }}>
-								SomaAI
-							</motion.span>
-						</Link>
-					</motion.div>
+          {/* Desktop auth */}
+          <div className="hidden md:flex items-center gap-3">
+            {user ? (
+              <button
+                onClick={handleAuth}
+                className="px-4 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-all duration-200"
+              >
+                Sign out
+              </button>
+            ) : (
+              <Link
+                to="/signin"
+                className="btn-primary text-sm"
+              >
+                Sign in
+              </Link>
+            )}
+          </div>
 
-					{/* Desktop Navigation */}
-					<nav className="hidden md:flex gap-4 lg:gap-8 items-center text-sm font-semibold">
-						{pages.map((page, index) => (
-							<Page {...page} key={index} />
-						))}
+          {/* Mobile: auth + hamburger */}
+          <div className="flex items-center gap-2 md:hidden">
+            {user && (
+              <button
+                onClick={handleAuth}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+              >
+                Sign out
+              </button>
+            )}
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              className="w-9 h-9 flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
+            >
+              <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+                {mobileOpen ? (
+                  <path d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <>
+                    <path d="M3 7h18" />
+                    <path d="M3 12h18" />
+                    <path d="M3 17h18" />
+                  </>
+                )}
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
 
-						<AnimatePresence>
-							<motion.button
-								initial={{ opacity: 0, scale: 0.8 }}
-								animate={{ opacity: 1, scale: 1 }}
-								exit={{ opacity: 0, scale: 0.8 }}
-								whileHover={{ scale: 1.05, y: -2 }}
-								whileTap={{ scale: 0.95 }}
-								onClick={handleAuthAction}
-								className={`bg-gradient-to-r text-white px-4 py-2 rounded-xl hover:shadow-lg transition-all duration-300 text-sm font-semibold ${
-									showSignOut
-										? "from-red-500 to-pink-500 hover:shadow-red-500/25"
-										: "from-indigo-600 to-purple-600 hover:shadow-indigo-500/25"
-								}`}>
-								{showSignOut ? "Sign Out" : "Sign In"}
-							</motion.button>
-						</AnimatePresence>
-					</nav>
-
-					{/* Mobile Menu Button */}
-					<div className="flex items-center gap-3 md:hidden">
-						<AnimatePresence>
-							{user && (
-								<motion.button
-									initial={{ opacity: 0, scale: 0.8 }}
-									animate={{ opacity: 1, scale: 1 }}
-									exit={{ opacity: 0, scale: 0.8 }}
-									whileTap={{ scale: 0.95 }}
-									onClick={handleAuthAction}
-									className={`bg-gradient-to-r text-white px-3 py-1.5 rounded-lg text-xs font-semibold ${
-										showSignOut
-											? "from-red-500 to-pink-500"
-											: "from-indigo-600 to-purple-600"
-									}`}>
-									{showSignOut ? "Out" : "In"}
-								</motion.button>
-							)}
-						</AnimatePresence>
-						<motion.button
-							className="mobile-menu-button p-2 rounded-lg text-slate-600 hover:bg-slate-100 focus:outline-none"
-							whileTap={{ scale: 0.95 }}
-							onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-							aria-label="Toggle menu">
-							<svg
-								className="w-6 h-6"
-								fill="none"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth="2"
-								viewBox="0 0 24 24"
-								stroke="currentColor">
-								{isMobileMenuOpen ? (
-									<path d="M6 18L18 6M6 6l12 12" />
-								) : (
-									<path d="M4 6h16M4 12h16M4 18h16" />
-								)}
-							</svg>
-						</motion.button>
-					</div>
-				</div>
-			</div>
-
-			{/* Mobile Menu */}
-			<AnimatePresence>
-				{isMobileMenuOpen && (
-					<>
-						{/* Backdrop */}
-						<motion.div
-							initial={{ opacity: 0 }}
-							animate={{ opacity: 1 }}
-							exit={{ opacity: 0 }}
-							onClick={() => setIsMobileMenuOpen(false)}
-							className="fixed inset-0 bg-black/50 z-40 md:hidden top-16"
-						/>
-
-						{/* Menu Panel */}
-						<motion.nav
-							initial={{ x: "100%" }}
-							animate={{ x: 0 }}
-							exit={{ x: "100%" }}
-							transition={{ type: "spring", damping: 25, stiffness: 200 }}
-							className="mobile-menu fixed top-16 right-0 bottom-0 w-64 bg-white shadow-2xl z-50 md:hidden overflow-y-auto">
-							<div className="flex flex-col p-4 space-y-2">
-								{pages.map((page, index) => (
-									<Page
-										{...page}
-										key={index}
-										onClick={() => setIsMobileMenuOpen(false)}
-									/>
-								))}
-
-								{!user && (
-									<motion.button
-										whileTap={{ scale: 0.95 }}
-										onClick={handleAuthAction}
-										className="mt-4 w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-3 rounded-xl font-semibold shadow-lg hover:shadow-indigo-500/25 transition-all duration-300">
-										Sign In
-									</motion.button>
-								)}
-							</div>
-						</motion.nav>
-					</>
-				)}
-			</AnimatePresence>
-		</motion.header>
-	);
+      {/* Mobile menu */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileOpen(false)}
+              className="fixed inset-0 top-16 bg-black/30 backdrop-blur-sm z-40 md:hidden"
+            />
+            <motion.nav
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="fixed top-16 right-0 bottom-0 w-72 bg-white border-l border-slate-200 z-50 md:hidden overflow-y-auto"
+            >
+              <div className="p-5 space-y-1">
+                {navLinks.map(({ label, path }) => (
+                  <Link
+                    key={path}
+                    to={path}
+                    className={`flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                      isActive(path)
+                        ? "text-emerald-700 bg-emerald-50"
+                        : "text-slate-700 hover:bg-slate-50"
+                    }`}
+                  >
+                    {label}
+                  </Link>
+                ))}
+                {!user && (
+                  <div className="pt-4">
+                    <Link
+                      to="/signin"
+                      className="btn-primary w-full justify-center"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      Sign in
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </motion.nav>
+          </>
+        )}
+      </AnimatePresence>
+    </motion.header>
+  );
 }
